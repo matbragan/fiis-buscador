@@ -2,6 +2,7 @@ import requests
 import pandas as pd
 
 from constants import URL, HEADERS, PERCENT_COLS
+from fiis_segments import fiis_segments
 
 def get_data():
     response = requests.get(URL, headers=HEADERS)
@@ -10,6 +11,8 @@ def get_data():
     else:
         print(f'Error: {response.status_code}')
         exit(1)
+
+    df['Segmento'] = df['Papel'].map(fiis_segments).fillna(df['Segmento'])
 
     for col in PERCENT_COLS:
         df[col] = df[col].str.replace('%', '').str.replace('.', '', regex=False).str.replace(',', '.').astype(float)
@@ -23,8 +26,6 @@ def get_data():
     df['p_vp_approved'] = df['P/VP'].between(0.7, 1.05)
     df['ffo_yield_approved'] = df['FFO Yield'] > df['Dividend Yield']
     df['liquidez_approved'] = df['Liquidez'] >= 300000
-
-    df['Papel'] = df['Papel'].apply(lambda x: f'<a href="https://www.fundamentus.com.br/detalhes.php?papel={x}" target="_blank">{x}</a>')
-    df['Segmento'] = df.apply(lambda row: f'<a href="https://investidor10.com.br/fiis/{row["Papel"].split(">")[1].split("<")[0].lower()}/" target="_blank">{row["Segmento"]}</a>', axis=1)
+    df['vacancia_approved'] = df['Vacância Média'] <= 20
 
     return df

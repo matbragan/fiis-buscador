@@ -16,7 +16,7 @@ st.sidebar.header('Filtros')
 
 metodo2em1 = st.sidebar.toggle('Método 2 em 1')
 if metodo2em1:
-    df = df[df['dy_approved'] & df['p_vp_approved'] & df['liquidez_approved']]
+    df = df[df['dy_approved'] & df['p_vp_approved'] & df['liquidez_approved'] & df['vacancia_approved']]
 
 ffo_yield_dy = st.sidebar.toggle('FFO Yield > Dividend Yield')
 if ffo_yield_dy:
@@ -67,12 +67,26 @@ if liquidez_min:
     df = df[df['Liquidez'] >= liquidez_min]
 
 
-########################################### SIDEBAR SUMMARY
-st.sidebar.markdown('---')
+papel = st.sidebar.text_input('Papel')
+if papel:
+    df = df[df['Papel'].str.contains(papel, case=False, na=False)]
+
+
+segmentos_list = df['Segmento'].dropna().unique()
+segmentos = st.sidebar.multiselect('Segmento(s)', options=segmentos_list, default=None)
+
+# Filter DataFrame based on selected options
+if segmentos:
+    df = df[df['Segmento'].isin(segmentos)]
+
+
 st.sidebar.title(f'{df.shape[0]} FIIs')
 
 
 ########################################### MAIN TABLE
+df['Papel'] = df['Papel'].apply(lambda x: f'<a href="https://www.fundamentus.com.br/detalhes.php?papel={x}" target="_blank">{x}</a>')
+df['Segmento'] = df.apply(lambda row: f'<a href="https://investidor10.com.br/fiis/{row["Papel"].split(">")[1].split("<")[0].lower()}/" target="_blank">{row["Segmento"]}</a>', axis=1)
+
 df = df.drop(columns=df.filter(regex='(approved$|rank$)').columns)
 df = df.reset_index(drop=True).reset_index().rename(columns={'index': 'Rank'})
 df['Rank'] = df['Rank'] + 1
