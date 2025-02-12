@@ -8,8 +8,6 @@ st.set_page_config(page_title='FIIs', layout='wide')
 
 df = get_data()
 
-st.title('FIIs')
-
 
 ########################################### SIDEBAR FILTERS
 st.sidebar.header('Filtros')
@@ -23,12 +21,16 @@ if ffo_yield_dy:
     df = df[df['ffo_yield_approved']]
 
 
+favorites = st.sidebar.toggle('Favoritos')
+if favorites:
+    df = df[df['Favorito'] == '⭐']
+
+
 def numeric_cast(str_value):
-    """Converte string com formatação brasileira para float."""
     if str_value is None:
         return None
-    str_value = str_value.replace(".", "") 
-    str_value = str_value.replace(",", ".")
+    str_value = str_value.replace('.', '') 
+    str_value = str_value.replace(',', '.')
     try:
         return float(str_value)
     except ValueError:
@@ -80,7 +82,7 @@ if segmentos:
     df = df[df['Segmento'].isin(segmentos)]
 
 
-st.sidebar.title(f'{df.shape[0]} FIIs')
+st.title(f'{df.shape[0]} FIIs')
 
 
 ########################################### MAIN TABLE
@@ -100,8 +102,8 @@ df = df.rename(columns=rename_porcent_cols)
 formatters = {}
 for col in df.columns:
     if pd.api.types.is_numeric_dtype(df[col]):
-        formatters[col] = lambda x: f"{x:,.2f}".replace(",", "TEMP").replace(".", ",").replace("TEMP", ".")
+        formatters[col] = lambda x: f'{x:,.2f}'.replace(',', 'TEMP').replace('.', ',').replace('TEMP', '.')
     for col in ['Rank', 'Valor de Mercado', 'Liquidez', 'Qtd de imóveis']:
-        formatters[col] = lambda x: f"{x:,.0f}".replace(",", "TEMP").replace(".", ",").replace("TEMP", ".")
+        formatters[col] = lambda x: f'{x:,.0f}'.replace(',', 'TEMP').replace('.', ',').replace('TEMP', '.')
 
 st.markdown(df.to_html(escape=False, index=False, formatters=formatters), unsafe_allow_html=True)
