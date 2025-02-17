@@ -8,4 +8,5 @@ fiis_segments = {
     'XPLG11': 'Logística',
     'HGLG11': 'Logística',
     'BTLG11': 'Logística',
+    'TVRI11': 'Lajes Corporativas',
 }
