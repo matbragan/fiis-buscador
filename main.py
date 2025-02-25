@@ -12,6 +12,8 @@ df = get_data()
 ########################################### SIDEBAR FILTERS
 st.sidebar.header('Filtros')
 
+segmentos_list = df['Segmento'].dropna().unique()
+
 metodo2em1 = st.sidebar.toggle('Método 2 em 1')
 if metodo2em1:
     df = df[df['dy_approved'] & df['p_vp_approved'] & df['liquidez_approved'] & df['vacancia_approved']]
@@ -74,7 +76,6 @@ if papel:
     df = df[df['Papel'].str.contains(papel, case=False, na=False)]
 
 
-segmentos_list = df['Segmento'].dropna().unique()
 segmentos = st.sidebar.multiselect('Segmento(s)', options=segmentos_list, default=None)
 
 # Filter DataFrame based on selected options
