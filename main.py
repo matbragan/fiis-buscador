@@ -6,17 +6,28 @@ from constants import PERCENT_COLS
 
 st.set_page_config(page_title='FIIs', layout='wide')
 
-df = get_data()
+df = get_data(put_plus_data=True)
 
 
 ########################################### SIDEBAR FILTERS
 st.sidebar.header('Filtros')
 
+tipos_list = df['Tipo'].dropna().unique()
+tipos = st.sidebar.multiselect('Tipo(s)', options=tipos_list, default=None)
+if tipos:
+    df = df[df['Tipo'].isin(tipos)]
+
+
 segmentos_list = df['Segmento'].dropna().unique()
+segmentos = st.sidebar.multiselect('Segmento(s)', options=segmentos_list, default=None)
+if segmentos:
+    df = df[df['Segmento'].isin(segmentos)]
+
 
 metodo2em1 = st.sidebar.toggle('Método 2 em 1')
 if metodo2em1:
     df = df[df['dy_approved'] & df['p_vp_approved'] & df['liquidez_approved'] & df['vacancia_approved']]
+
 
 ffo_yield_dy = st.sidebar.toggle('FFO Yield > Dividend Yield')
 if ffo_yield_dy:
@@ -63,32 +74,25 @@ if p_vp_max:
     df = df[df['P/VP'] <= p_vp_max]
 
 
-liquidez_min_str = st.sidebar.text_input('Liquidez Mínima')
+liquidez_min_str = st.sidebar.text_input('Liquidez Mínima (Mil)')
 
-liquidez_min = numeric_cast(liquidez_min_str)
+liquidez_min = numeric_cast(liquidez_min_str)*1000 if liquidez_min_str else None
 
 if liquidez_min:
     df = df[df['Liquidez'] >= liquidez_min]
 
 
-papel = st.sidebar.text_input('Papel')
-if papel:
-    df = df[df['Papel'].str.contains(papel, case=False, na=False)]
-
-
-segmentos = st.sidebar.multiselect('Segmento(s)', options=segmentos_list, default=None)
-
-# Filter DataFrame based on selected options
-if segmentos:
-    df = df[df['Segmento'].isin(segmentos)]
-
-
-st.title(f'{df.shape[0]} FIIs')
+ticker = st.sidebar.text_input('Ticker')
+if ticker:
+    df = df[df['Ticker'].str.contains(ticker, case=False, na=False)]
 
 
 ########################################### MAIN TABLE
-df['Papel'] = df['Papel'].apply(lambda x: f'<a href="https://www.fundamentus.com.br/detalhes.php?papel={x}" target="_blank">{x}</a>')
-df['Segmento'] = df.apply(lambda row: f'<a href="https://investidor10.com.br/fiis/{row["Papel"].split(">")[1].split("<")[0].lower()}/" target="_blank">{row["Segmento"]}</a>', axis=1)
+st.title(f'{df.shape[0]} FIIs')
+
+# df['Ticker'] = df['Ticker'].apply(lambda x: f'<a href="https://www.fundamentus.com.br/detalhes.php?papel={x}" target="_blank">{x}</a>')
+# df['Segmento'] = df.apply(lambda row: f'<a href="https://investidor10.com.br/fiis/{row["Ticker"].split(">")[1].split("<")[0].lower()}/" target="_blank">{row["Segmento"]}</a>', axis=1)
+df['Ticker'] = df['Ticker'].apply(lambda x: f'<a href="https://investidor10.com.br/fiis/{x.lower()}" target="_blank">{x}</a>')
 
 df = df.drop(columns=df.filter(regex='(approved$|rank$)').columns)
 df = df.reset_index(drop=True).reset_index().rename(columns={'index': 'Rank'})

@@ -20,6 +20,15 @@ def get_fiis_data(ticker: str) -> list:
 
         liquidez = soup.find('span', string='Liquidez Diária')
         liquidez = liquidez.find_next('span').text.strip() if liquidez else 'N/A'
+        liquidez = liquidez.replace('R$ ', '').replace(' ', '')
+        multiplier = 1
+        if liquidez.endswith('M'):
+            multiplier = 1_000_000
+            liquidez = liquidez.replace('M', '')
+        elif liquidez.endswith('K'):
+            multiplier = 1_000
+            liquidez = liquidez.replace('K', '')
+        liquidez = float(liquidez.replace(',', '.')) * multiplier if liquidez != '-' else 0
 
         variacao12m = soup.find('span', string='VARIAÇÃO (12M)')
         variacao12m = variacao12m.find_next('span').text.strip() if variacao12m else 'N/A'
@@ -45,12 +54,14 @@ def get_fiis_data(ticker: str) -> list:
         ult_rendimento = soup.find('span', string=re.compile(r'ÚLTIMO RENDIMENTO', re.IGNORECASE))
         ult_rendimento = ult_rendimento.find_parent('div', class_='desc').find('div', class_='value').find('span').get_text(strip=True) if ult_rendimento else 'N/A'
 
-        data.append([cotacao, liquidez, variacao12m, publico_alvo, tipo_gestao, taxa_adm, vacancia, nro_cotistas, vl_patrimonial, ult_rendimento])
+        data.append([cotacao, liquidez
+                     #, variacao12m, publico_alvo, tipo_gestao, taxa_adm, vacancia, nro_cotistas, vl_patrimonial, ult_rendimento
+                     ])
 
         return data[0]
     
 
-def get_fiis(page: int) -> pd.DataFrame:
+def get_fiis(page: int, put_plus_data: bool = False) -> pd.DataFrame:
     
     url = f'https://investidor10.com.br/fiis/?page={page}'
 
@@ -63,7 +74,7 @@ def get_fiis(page: int) -> pd.DataFrame:
         fii_cards = soup.find_all('div', class_='actions fii')
 
         data = []
-
+        
         for card in fii_cards:
             ticker = card.find('h2', class_='ticker-name').text.strip()
             nome = card.find('h3').text.strip()
@@ -76,17 +87,36 @@ def get_fiis(page: int) -> pd.DataFrame:
 
             tipo = card.find('span', string='Tipo: ')
             tipo = tipo.find_next('span').text.strip() if tipo else 'N/A'
+            tipo = 'Outro' if tipo == '-' else tipo
 
             segmento = card.find('span', string='Segmento: ')
             segmento = segmento.find_next('span').text.strip() if segmento else 'N/A'
+            if segmento == 'Logístico / Indústria / Galpões':
+                segmento = 'Logístico'
+            elif segmento == 'Shoppings / Varejo':
+                segmento = 'Shoppings'
+            elif segmento == 'Títulos e Valores Mobiliários':
+                segmento = 'Títulos e Val. Mob.'
 
-            plus_data = get_fiis_data(ticker)
+            basic_data = [ticker#, nome, p_vp, dy, tipo, segmento
+                          ]
 
-            data.append([ticker, nome, p_vp, dy, tipo, segmento] + plus_data)
+            if put_plus_data:
+                plus_data = get_fiis_data(ticker)
+                data.append(basic_data + plus_data)
+            else:
+                data.append(basic_data)
 
-        df = pd.DataFrame(data, columns=['Ticker', 'Nome', 'P/VP', 'DY', 'Tipo', 'Segmento', 'Cotação', 'Liquidez Diária', 
-                                         'Variação 12M', 'Público Alvo', 'Tipo de Gestão', 'Taxa de Administração',
-                                         'Vacância', 'Número de Cotistas', 'Valor Patrimonial', 'Último Rendimento'])
+        columns = ['Ticker'
+                   #, 'Nome', 'P/VP', 'Dividend Yield', 'Tipo', 'Segmento'
+                   ]
+        if put_plus_data:
+            columns += ['Cotação', 'Liquidez',
+                        # 'Variação 12M', 'Público Alvo', 'Tipo de Gestão', 'Taxa de Administração', 
+                        #'Vacância', 'Número de Cotistas', 'Valor Patrimonial', 'Último Rendimento'
+                        ]
+
+        df = pd.DataFrame(data, columns=columns)
 
         return df
 
@@ -94,12 +124,20 @@ def get_fiis(page: int) -> pd.DataFrame:
         print(f'Erro ao acessar a página. Código: {response.status_code}')
 
 
-def get_all_fiis() -> pd.DataFrame:
+def get_all_fiis(put_plus_data: bool = False) -> pd.DataFrame:
 
     all_fiis = pd.DataFrame()
     
     for page in range(1, 16):
-        fiis = get_fiis(page)
+        fiis = get_fiis(page, put_plus_data)
         all_fiis = pd.concat([all_fiis, fiis], ignore_index=True)
     
     return all_fiis
+
+
+if __name__ == '__main__':
+    fiis = get_all_fiis()
+    fiis.to_csv('fiis.csv', index=False)
+
+    fiis = get_all_fiis(put_plus_data=True)
+    fiis.to_csv('fiis_plus.csv', index=False)
