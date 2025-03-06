@@ -21,10 +21,11 @@ def get_data(put_plus_data: bool = False):
     if put_plus_data:
         plus_data = pd.read_csv('fiis_plus.csv')
         df = df.merge(plus_data, how='inner', on='Ticker')
-        df = df[['Ticker', 'Tipo', 'Segmento', 'Cotação_y', 'P/VP_y', 'Dividend Yield_y', 'FFO Yield', 'Liquidez', 
+        df = df[['Ticker', 'Tipo', 'Segmento', 'Cotação_y', 'P/VP_y', 'Dividend Yield_y', 'FFO Yield', 'Liquidez_y', 
                  'Valor de Mercado', 'Qtd de imóveis', 'Vacância', 'Variação 12M', 'Público Alvo', 'Tipo de Gestão', 
                  'Taxa de Administração', 'Número de Cotistas', 'Valor Patrimonial', 'Último Rendimento', 'Favorito']]
-        df = df.rename(columns={'Cotação_y': 'Cotação', 'P/VP_y': 'P/VP', 'Dividend Yield_y': 'Dividend Yield'})
+        df = df.rename(columns={'Cotação_y': 'Cotação', 'P/VP_y': 'P/VP', 
+                                'Dividend Yield_y': 'Dividend Yield', 'Liquidez_y': 'Liquidez'})
     else:
         tipo_segmento = pd.read_csv('fiis.csv')
         df = df.merge(tipo_segmento[['Ticker', 'Tipo', 'Segmento']], how='inner', on='Ticker')
