@@ -51,6 +51,11 @@ def get_data(put_plus_data: bool = False):
         'fii.GENERAL': 'Geral'
     })
 
+    df['Tipo de Gestão'] = df['Tipo de Gestão'].replace({
+        'Passive': 'Passiva',
+        'Active': 'Ativa'
+    })
+
 
     df['dy_rank'] = df['Dividend Yield'].rank(ascending=False)
     df['p_vp_rank'] = df['P/VP'].rank()
