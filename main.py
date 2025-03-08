@@ -17,13 +17,15 @@ if ticker:
     df = df[df['Ticker'].str.contains(ticker, case=False, na=False)]
 
 
-tipos_list = df['Tipo'].dropna().unique()
+ordem_personalizada = ['Fundo de Tijolo', 'Fundo de Papel']
+tipos_list = sorted(df['Tipo'].dropna().unique(), key=lambda x: ordem_personalizada.index(x) if x in ordem_personalizada else len(ordem_personalizada))
+
 tipos = st.sidebar.multiselect('Tipo(s)', options=tipos_list, default=None)
 if tipos:
     df = df[df['Tipo'].isin(tipos)]
 
 
-segmentos_list = df['Segmento'].dropna().unique()
+segmentos_list = sorted(df['Segmento'].dropna().unique())
 segmentos = st.sidebar.multiselect('Segmento(s)', options=segmentos_list, default=None)
 if segmentos:
     df = df[df['Segmento'].isin(segmentos)]

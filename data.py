@@ -23,7 +23,7 @@ def get_data(put_plus_data: bool = False):
         df = df.merge(plus_data, how='inner', on='Ticker')
         df = df[['Ticker', 'Tipo', 'Segmento', 'Cotação_y', 'P/VP_y', 'Dividend Yield_y', 'FFO Yield', 'Liquidez_y', 
                  'Qtd de imóveis', 'Vacância', 'Variação 12M', 'Tipo de Gestão', 'Público Alvo', 'Valor de Mercado', 
-                 'Valor Patrimonial', 'Taxa de Administração', 'Número de Cotistas', 'Último Rendimento', 'Favorito']]
+                 'Valor Patrimonial', 'Número de Cotistas', 'Último Rendimento', 'Taxa de Administração', 'Favorito']]
         df = df.rename(columns={'Cotação_y': 'Cotação', 'P/VP_y': 'P/VP', 
                                 'Dividend Yield_y': 'Dividend Yield', 'Liquidez_y': 'Liquidez'})
     else:
@@ -37,10 +37,19 @@ def get_data(put_plus_data: bool = False):
         if col != 'Variação 12M':
             df[col] = df[col].str.replace('%', '').str.replace('.', '', regex=False).str.replace(',', '.').astype(float)
 
+    df['Tipo'] = df['Tipo'].replace({
+        'Fundo de tijolo': 'Fundo de Tijolo',
+        'Fundo de papel': 'Fundo de Papel',
+        'Fundo de desenvolvimento': 'Fundo de Desenvolvimento',
+        'Fundo de fundos': 'Fundo de Fundos',
+        'Fundo misto': 'Fundo Misto'
+    })
+    
+
     df['Público Alvo'] = df['Público Alvo'].replace({
         'fii.QUALIFIED_INVESTOR': 'Investidor Qualificado',
         'fii.GENERAL': 'Geral'
-        })
+    })
 
 
     df['dy_rank'] = df['Dividend Yield'].rank(ascending=False)
