@@ -4,6 +4,6 @@ HEADERS = {
 }
 
 PERCENT_COLS = ['Dividend Yield', 'FFO Yield', 'Vacância', 'Variação 12M']
-MONEY_COLS = ['Cotação', 'Liquidez', 'Valor de Mercado', 'Último Rendimento'] # , 'Valor Patrimonial'
+MONEY_COLS = ['Cotação', 'Liquidez Diária', 'Valor de Mercado', 'Último Rendimento'] # , 'Valor Patrimonial'
 FLOAT_COLS = ['P/VP']
 INT_COLS = ['Rank', 'Qtd de imóveis', 'Número de Cotistas']

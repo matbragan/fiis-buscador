@@ -66,12 +66,12 @@ if dy_max:
     df = df[df['Dividend Yield'] <= dy_max]
 
 
-liquidez_min_str = st.sidebar.text_input('Liquidez Mínima (Mil)')
+liquidez_min_str = st.sidebar.text_input('Liquidez Diária Mínima (Mil)')
 
 liquidez_min = numeric_cast(liquidez_min_str)*1000 if liquidez_min_str else None
 
 if liquidez_min:
-    df = df[df['Liquidez'] >= liquidez_min]
+    df = df[df['Liquidez Diária'] >= liquidez_min]
 
 
 favorites = st.sidebar.toggle('Favoritos')
@@ -105,7 +105,7 @@ for col in df.columns:
     for col in PERCENT_COLS:
         formatters[col] = lambda x: f'{x:,.2f}%'.replace(',', 'TEMP').replace('.', ',').replace('TEMP', '.')
     for col in MONEY_COLS:
-        if col == 'Valor de Mercado':
+        if col in ['Valor de Mercado', 'Liquidez Diária']:
             formatters[col] = lambda x: format_sufix_money(x)
         else:
             formatters[col] = lambda x: f'R$ {x:,.2f}'.replace(',', 'TEMP').replace('.', ',').replace('TEMP', '.')

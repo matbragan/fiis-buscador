@@ -25,13 +25,14 @@ def get_data(put_plus_data: bool = False):
                  'Qtd de imóveis', 'Vacância', 'Variação 12M', 'Tipo de Gestão', 'Público Alvo', 'Valor de Mercado', 
                  'Valor Patrimonial', 'Número de Cotistas', 'Último Rendimento', 'Taxa de Administração', 'Favorito']]
         df = df.rename(columns={'Cotação_y': 'Cotação', 'P/VP_y': 'P/VP', 
-                                'Dividend Yield_y': 'Dividend Yield', 'Liquidez_y': 'Liquidez'})
+                                'Dividend Yield_y': 'Dividend Yield', 'Liquidez_y': 'Liquidez Diária'})
     else:
         tipo_segmento = pd.read_csv('downloads/fiis.csv')
         df = df.merge(tipo_segmento[['Ticker', 'Tipo', 'Segmento']], how='inner', on='Ticker')
         df = df[['Ticker', 'Tipo', 'Segmento', 'Cotação', 'P/VP', 'Dividend Yield', 'FFO Yield', 
                  'Liquidez', 'Qtd de imóveis', 'Vacância Média', 'Valor de Mercado', 'Favorito']]
-        df = df.rename(columns={'Vacância Média': 'Vacância'})
+        df = df.rename(columns={'Vacância Média': 'Vacância', 'Liquidez': 'Liquidez Diária'})
+
 
     for col in PERCENT_COLS:
         if col != 'Variação 12M':
@@ -55,6 +56,8 @@ def get_data(put_plus_data: bool = False):
         'Passive': 'Passiva',
         'Active': 'Ativa'
     })
+
+    df['Valor Patrimonial'] = df['Valor Patrimonial'].str.replace('Bilhão', 'Bilhões').str.replace('Milhão', 'Milhões')
 
 
     df['dy_rank'] = df['Dividend Yield'].rank(ascending=False)
