@@ -136,10 +136,10 @@ def get_all_fiis(put_plus_data: bool = False) -> pd.DataFrame:
 
 
 if __name__ == '__main__':
-    # fiis = get_all_fiis()
-    # fiis.to_csv('fiis.csv', index=False)
-    # print('fiis.csv writed successfully!')
+    fiis = get_all_fiis()
+    fiis.to_csv('downloads/fiis.csv', index=False)
+    print('fiis.csv writed successfully!')
 
     fiis = get_all_fiis(put_plus_data=True)
-    fiis.to_csv('fiis_plus.csv', index=False)
+    fiis.to_csv('downloads/fiis_plus.csv', index=False)
     print('fiis_plus.csv writed successfully!')
