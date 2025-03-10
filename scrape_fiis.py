@@ -1,7 +1,15 @@
+import os
 import re
 import requests
 import pandas as pd
 from bs4 import BeautifulSoup
+
+
+def ensure_downloads_folder():
+    """Cria a pasta 'downloads' se ela não existir."""
+    if not os.path.exists('downloads'):
+        os.makedirs('downloads')
+        print('Pasta "downloads" criada com sucesso!')
 
 
 def get_fiis_data(ticker: str) -> list:
@@ -136,6 +144,8 @@ def get_all_fiis(put_plus_data: bool = False) -> pd.DataFrame:
 
 
 if __name__ == '__main__':
+    ensure_downloads_folder()
+
     fiis = get_all_fiis()
     fiis.to_csv('downloads/fiis.csv', index=False)
     print('fiis.csv writed successfully!')
