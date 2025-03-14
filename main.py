@@ -1,7 +1,7 @@
 import streamlit as st
 
-from data import get_data
-from constants import INVESTIDOR10_BASE_URL, PERCENT_COLS, MONEY_COLS, FLOAT_COLS, INT_COLS
+from fiis.get_fiis import get_data
+from fiis.constants import INVESTIDOR10_BASE_URL, PERCENT_COLS, MONEY_COLS, FLOAT_COLS, INT_COLS
 
 st.set_page_config(page_title='FIIs', layout='wide')
 

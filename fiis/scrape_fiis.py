@@ -1,10 +1,12 @@
 import os
 import re
+import sys
 import requests
 import pandas as pd
 from bs4 import BeautifulSoup
 
-from constants import INVESTIDOR10_BASE_URL, HEADERS
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from fiis.constants import INVESTIDOR10_BASE_URL, HEADERS, FILE_NAME
 
 
 def ensure_downloads_folder() -> None:
@@ -66,7 +68,7 @@ class FIIsScraper:
             list: Uma lista com os dados do FII.
         '''
         route = ticker.lower()
-        soup = self.get_soup_request(route)
+        soup = self.get_soup_request(route=route)
 
         data = []
 
@@ -148,7 +150,7 @@ class FIIsScraper:
             pd.DataFrame: Um DataFrame contendo os FIIs.
         '''
         route = f'?page={page}'
-        soup = self.get_soup_request(route)
+        soup = self.get_soup_request(route=route)
 
         fii_cards = soup.find_all('div', class_='actions fii')
 
@@ -198,7 +200,7 @@ class FIIsScraper:
 
             basic_data = [ticker, nome, p_vp, dy, tipo, segmento]
 
-            plus_data = self.get_fii_data(ticker)
+            plus_data = self.get_fii_data(ticker=ticker)
             data.append(basic_data + plus_data)
 
         columns = ['Ticker', 'Nome', 'P/VP', 'Dividend Yield', 'Tipo', 'Segmento', 'Cotação', 
@@ -220,7 +222,7 @@ class FIIsScraper:
         all_fiis = pd.DataFrame()
         
         for page in range(1, 16):
-            fiis = self.get_fiis(page)
+            fiis = self.get_fiis(page=page)
             if fiis.empty:
                 break
             print(f'Leitura de FIIs da página {page} feita com sucesso!')
@@ -234,4 +236,4 @@ if __name__ == '__main__':
     FIIsScraper = FIIsScraper()
     fiis = FIIsScraper.get_all_fiis()
     
-    write_csv_file(fiis, 'fiis')
+    write_csv_file(data=fiis, file_name=FILE_NAME)

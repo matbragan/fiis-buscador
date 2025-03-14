@@ -1,7 +1,7 @@
 import requests
 import pandas as pd
 
-from constants import FUNDAMENTUS_URL, HEADERS
+from fiis.constants import FUNDAMENTUS_URL, HEADERS, FILE_NAME
 
 
 def get_fundamentus_data() -> pd.DataFrame:
@@ -29,7 +29,7 @@ def get_data() -> pd.DataFrame:
     Returns:
         pd.DataFrame: Um DataFrame contendo os dados dos FIIs.
     '''
-    df = pd.read_csv('downloads/fiis.csv')
+    df = pd.read_csv(f'downloads/{FILE_NAME}.csv')
     
     fundamentus_df = get_fundamentus_data()
     fundamentus_df = fundamentus_df.rename(columns={'Papel': 'Ticker'})

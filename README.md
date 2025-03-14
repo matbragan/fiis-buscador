@@ -23,7 +23,7 @@ pip install -r requirements.txt
 
 Fazer scrape local
 ~~~sh
-python3 scrape_fiis.py
+python3 fiis/scrape_fiis.py
 ~~~
 
 Inicializar projeto
