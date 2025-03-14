@@ -1,7 +1,7 @@
 import requests
 import pandas as pd
 
-from constants import FUNDAMENTUS_URL, HEADERS, PERCENT_COLS
+from constants import FUNDAMENTUS_URL, HEADERS
 
 
 def get_fundamentus_data() -> pd.DataFrame:
