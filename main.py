@@ -1,11 +1,11 @@
 import streamlit as st
 
 from data import get_data
-from constants import PERCENT_COLS, MONEY_COLS, FLOAT_COLS, INT_COLS
+from constants import INVESTIDOR10_BASE_URL, PERCENT_COLS, MONEY_COLS, FLOAT_COLS, INT_COLS
 
 st.set_page_config(page_title='FIIs', layout='wide')
 
-df = get_data(put_plus_data=True)
+df = get_data()
 
 
 ########################################### SIDEBAR FILTERS
@@ -77,7 +77,7 @@ if liquidez_min:
 ########################################### MAIN TABLE
 st.title(f'{df.shape[0]} FIIs')
 
-df['Ticker'] = df['Ticker'].apply(lambda x: f'<a href="https://investidor10.com.br/fiis/{x.lower()}" target="_blank">{x}</a>')
+df['Ticker'] = df['Ticker'].apply(lambda x: f'<a href="{INVESTIDOR10_BASE_URL}{x.lower()}" target="_blank">{x}</a>')
 
 df = df.drop(columns=df.filter(regex='(approved$|rank$)').columns)
 df = df.reset_index(drop=True).reset_index().rename(columns={'index': 'Rank'})
@@ -100,6 +100,8 @@ for col in df.columns:
     for col in PERCENT_COLS:
         formatters[col] = lambda x: f'{x:,.2f}%'.replace(',', 'TEMP').replace('.', ',').replace('TEMP', '.')
     for col in MONEY_COLS:
+        if col in ['Valor Patrimonial']:
+            break
         if col in ['Valor de Mercado', 'Liquidez Diária']:
             formatters[col] = lambda x: format_sufix_money(x)
         else:
