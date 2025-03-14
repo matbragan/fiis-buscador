@@ -4,22 +4,69 @@ import requests
 import pandas as pd
 from bs4 import BeautifulSoup
 
+from constants import INVESTIDOR10_BASE_URL, HEADERS
 
-def ensure_downloads_folder():
-    """Cria a pasta 'downloads' se ela não existir."""
+
+def ensure_downloads_folder() -> None:
+    ''' Cria a pasta downloads se ela não existir. '''
     if not os.path.exists('downloads'):
         os.makedirs('downloads')
         print('Pasta "downloads" criada com sucesso!')
 
 
-def get_fiis_data(ticker: str) -> list:
-    url = f'https://investidor10.com.br/fiis/{ticker.lower()}/'
+def write_csv_file(data: pd.DataFrame, file_name: str) -> None:
+    ''' 
+    Escreve um arquivo CSV com os dados fornecidos, escrita feita na pasta downloads.
 
-    headers = {'User-Agent': 'Mozilla/5.0'}
-    response = requests.get(url, headers=headers)
+    Args:
+        data (pd.DataFrame): DataFrame contendo os dados.
+        file_name (str): Nome do arquivo CSV.
+    '''
+    ensure_downloads_folder()
+    data.to_csv(f'downloads/{file_name}.csv', index=False)
+    print(f'Arquivo {file_name}.csv escrito com sucesso!')
 
-    if response.status_code == 200:
-        soup = BeautifulSoup(response.text, 'html.parser')
+
+class FIIsScraper:
+    ''' Classe para obter dados dos FIIs do site Investidor10. '''
+    def __init__(self):
+        self.base_url = INVESTIDOR10_BASE_URL
+        self.headers = HEADERS
+
+    
+    def get_soup_request(self, route: str) -> BeautifulSoup:
+        '''
+        Cria um BeautifulSoup de acordo com a rota ou filtro passado na requisição.
+
+        Args:
+            route (str): Rota ou filtro para fazer a requisição na url base
+
+        Returns:
+            BeautifulSoup: Objeto BeautifulSoup
+        '''
+        url = self.base_url + route
+        response = requests.get(url, headers=self.headers)
+
+        if response.status_code == 200:
+            return BeautifulSoup(response.text, 'html.parser')
+        else:
+            print(f'Erro na requisição: {response.status_code}')
+            exit(1)
+
+    
+    def get_fii_data(self, ticker: str) -> list:
+        ''' 
+        Obtém os dados de um FII, baseado em seu ticker e fazendo a requisição no Investidor10.
+        Transforma valores que representam dados numéricos em float e com pontos e virgulas no estilo EUA.
+
+        Args:
+            ticker (str): Ticker do FII que se deseja obter os dados.
+
+        Returns:
+            list: Uma lista com os dados do FII.
+        '''
+        route = ticker.lower()
+        soup = self.get_soup_request(route)
 
         data = []
 
@@ -46,15 +93,30 @@ def get_fiis_data(ticker: str) -> list:
 
         publico_alvo = soup.find('span', string=re.compile(r'PÚBLICO-ALVO', re.IGNORECASE))
         publico_alvo = publico_alvo.find_parent('div', class_='desc').find('div', class_='value').find('span').get_text(strip=True) if publico_alvo else 'N/A'
+        match publico_alvo:
+            case 'fii.QUALIFIED_INVESTOR':
+                publico_alvo = 'Investidor Qualificado'
+            case 'fii.GENERAL':
+                publico_alvo = 'Geral'
+            case _:
+                pass
 
         tipo_gestao = soup.find('span', string=re.compile(r'TIPO DE GESTÃO', re.IGNORECASE))
         tipo_gestao = tipo_gestao.find_parent('div', class_='desc').find('div', class_='value').find('span').get_text(strip=True) if tipo_gestao else 'N/A'
+        match tipo_gestao:
+            case 'Passive':
+                tipo_gestao = 'Passiva'
+            case 'Active':
+                tipo_gestao = 'Ativa'
+            case _:
+                pass
 
         taxa_adm = soup.find('span', string=re.compile(r'TAXA DE ADMINISTRAÇÃO', re.IGNORECASE))
         taxa_adm = taxa_adm.find_parent('div', class_='desc').find('div', class_='value').find('span').get_text(strip=True) if taxa_adm else 'N/A'
 
         vacancia = soup.find('span', string=re.compile(r'VACÂNCIA', re.IGNORECASE))
         vacancia = vacancia.find_parent('div', class_='desc').find('div', class_='value').find('span').get_text(strip=True) if vacancia else 'N/A'
+        vacancia = float(vacancia.replace('%', '').replace(' ', '').replace('.', '').replace(',', '.')) if vacancia not in ['-', 'N/A', ''] else 0
 
         nro_cotistas = soup.find('span', string=re.compile(r'NUMERO DE COTISTAS', re.IGNORECASE))
         nro_cotistas = nro_cotistas.find_parent('div', class_='desc').find('div', class_='value').find('span').get_text(strip=True) if nro_cotistas else 'N/A'
@@ -62,6 +124,7 @@ def get_fiis_data(ticker: str) -> list:
 
         vl_patrimonial = soup.find('span', string=re.compile(r'VALOR PATRIMONIAL', re.IGNORECASE))
         vl_patrimonial = vl_patrimonial.find_parent('div', class_='desc').find('div', class_='value').find('span').get_text(strip=True) if vl_patrimonial else 'N/A'
+        vl_patrimonial = vl_patrimonial.replace('Bilhão', 'Bilhões').replace('Milhão', 'Milhões')
 
         ult_rendimento = soup.find('span', string=re.compile(r'ÚLTIMO RENDIMENTO', re.IGNORECASE))
         ult_rendimento = ult_rendimento.find_parent('div', class_='desc').find('div', class_='value').find('span').get_text(strip=True) if ult_rendimento else 'N/A'
@@ -71,17 +134,21 @@ def get_fiis_data(ticker: str) -> list:
         data.append([cotacao, liquidez, variacao12m, publico_alvo, tipo_gestao, taxa_adm, vacancia, nro_cotistas, vl_patrimonial, ult_rendimento])
 
         return data[0]
-    
 
-def get_fiis(page: int, put_plus_data: bool = False) -> pd.DataFrame:
-    
-    url = f'https://investidor10.com.br/fiis/?page={page}'
 
-    headers = {'User-Agent': 'Mozilla/5.0'}
-    response = requests.get(url, headers=headers)
+    def get_fiis(self, page: int) -> pd.DataFrame:
+        '''
+        Obtém os dados dos FIIs de uma determinada página no site Investidor10.
+        Transforma valores que representam dados numéricos em float e com pontos e virgulas no estilo EUA.
 
-    if response.status_code == 200:
-        soup = BeautifulSoup(response.text, 'html.parser')
+        Args:
+            page (int): A página para se obter os FIIs.
+
+        Returns:
+            pd.DataFrame: Um DataFrame contendo os FIIs.
+        '''
+        route = f'?page={page}'
+        soup = self.get_soup_request(route)
 
         fii_cards = soup.find_all('div', class_='actions fii')
 
@@ -97,59 +164,74 @@ def get_fiis(page: int, put_plus_data: bool = False) -> pd.DataFrame:
 
             dy = card.find('span', string='DY: ')
             dy = dy.find_next('span').text.strip() if dy else 'N/A'
+            dy = float(dy.replace('%', '').replace(' ', '').replace('.', '').replace(',', '.')) if dy not in ['-', 'N/A', ''] else 0
 
             tipo = card.find('span', string='Tipo: ')
             tipo = tipo.find_next('span').text.strip() if tipo else 'N/A'
-            tipo = 'Outro' if tipo == '-' else tipo
+            match tipo:
+                case 'Fundo de tijolo':
+                    tipo = 'Fundo de Tijolo'
+                case 'Fundo de papel':
+                    tipo = 'Fundo de Papel'
+                case 'Fundo de desenvolvimento':
+                    tipo = 'Fundo de Desenvolvimento'
+                case 'Fundo de fundos':
+                    tipo = 'Fundo de Fundos'
+                case 'Fundo misto':
+                    tipo = 'Fundo Misto'
+                case '-':
+                    tipo = 'Outro'
+                case _:
+                    pass
 
             segmento = card.find('span', string='Segmento: ')
             segmento = segmento.find_next('span').text.strip() if segmento else 'N/A'
-            if segmento == 'Logístico / Indústria / Galpões':
-                segmento = 'Logístico'
-            elif segmento == 'Shoppings / Varejo':
-                segmento = 'Shoppings'
-            elif segmento == 'Títulos e Valores Mobiliários':
-                segmento = 'Títulos e Val. Mob.'
+            match segmento:
+                case 'Logístico / Indústria / Galpões':
+                    segmento = 'Logístico'
+                case 'Shoppings / Varejo':
+                    segmento = 'Shoppings'
+                case 'Títulos e Valores Mobiliários':
+                    segmento = 'Títulos e Val. Mob.'
+                case _:
+                    pass
 
             basic_data = [ticker, nome, p_vp, dy, tipo, segmento]
 
-            if put_plus_data:
-                plus_data = get_fiis_data(ticker)
-                data.append(basic_data + plus_data)
-            else:
-                data.append(basic_data)
+            plus_data = self.get_fii_data(ticker)
+            data.append(basic_data + plus_data)
 
-        columns = ['Ticker', 'Nome', 'P/VP', 'Dividend Yield', 'Tipo', 'Segmento']
-        if put_plus_data:
-            columns += ['Cotação', 'Liquidez', 'Variação 12M', 'Público Alvo', 'Tipo de Gestão', 'Taxa de Administração', 
-                        'Vacância', 'Número de Cotistas', 'Valor Patrimonial', 'Último Rendimento']
+        columns = ['Ticker', 'Nome', 'P/VP', 'Dividend Yield', 'Tipo', 'Segmento', 'Cotação', 
+                   'Liquidez Diária', 'Variação 12M', 'Público Alvo', 'Tipo de Gestão', 'Taxa de Administração', 
+                   'Vacância', 'Número de Cotistas', 'Valor Patrimonial', 'Último Rendimento']
 
         df = pd.DataFrame(data, columns=columns)
 
         return df
-
-    else:
-        print(f'Erro ao acessar a página. Código: {response.status_code}')
-
-
-def get_all_fiis(put_plus_data: bool = False) -> pd.DataFrame:
-
-    all_fiis = pd.DataFrame()
     
-    for page in range(1, 16):
-        fiis = get_fiis(page, put_plus_data)
-        all_fiis = pd.concat([all_fiis, fiis], ignore_index=True)
-    
-    return all_fiis
+
+    def get_all_fiis(self) -> pd.DataFrame:
+        '''
+        Obtém os dados de todos os FIIs do site Investidor10.
+
+        Returns:
+            pd.DataFrame: Um DataFrame contendo todos os FIIs do site.
+        '''
+        all_fiis = pd.DataFrame()
+        
+        for page in range(1, 16):
+            fiis = self.get_fiis(page)
+            if fiis.empty:
+                break
+            print(f'Leitura de FIIs da página {page} feita com sucesso!')
+            all_fiis = pd.concat([all_fiis, fiis], ignore_index=True)
+        
+        print('Todos FIIs obtidos com sucesso!')
+        return all_fiis
 
 
 if __name__ == '__main__':
-    ensure_downloads_folder()
-
-    fiis = get_all_fiis()
-    fiis.to_csv('downloads/fiis.csv', index=False)
-    print('fiis.csv writed successfully!')
-
-    fiis = get_all_fiis(put_plus_data=True)
-    fiis.to_csv('downloads/fiis_plus.csv', index=False)
-    print('fiis_plus.csv writed successfully!')
+    FIIsScraper = FIIsScraper()
+    fiis = FIIsScraper.get_all_fiis()
+    
+    write_csv_file(fiis, 'fiis')
