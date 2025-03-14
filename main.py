@@ -74,11 +74,6 @@ if liquidez_min:
     df = df[df['Liquidez Diária'] >= liquidez_min]
 
 
-favorites = st.sidebar.toggle('Favoritos')
-if favorites:
-    df = df[df['Favorito'] == '⭐']
-
-
 ########################################### MAIN TABLE
 st.title(f'{df.shape[0]} FIIs')
 
