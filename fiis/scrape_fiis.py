@@ -2,6 +2,7 @@ import os
 import re
 import sys
 import requests
+from datetime import datetime
 import pandas as pd
 from bs4 import BeautifulSoup
 
@@ -221,6 +222,7 @@ class FIIsScraper:
         '''
         all_fiis = pd.DataFrame()
         
+        print('Leitura de FIIs do site Investidor10 iniciando...')
         for page in range(1, 16):
             fiis = self.get_fiis(page=page)
             if fiis.empty:
@@ -228,6 +230,8 @@ class FIIsScraper:
             print(f'Leitura de FIIs da página {page} feita com sucesso!')
             all_fiis = pd.concat([all_fiis, fiis], ignore_index=True)
         
+        all_fiis['Data Atualização'] = datetime.now()
+
         print('Todos FIIs obtidos com sucesso!')
         return all_fiis
 

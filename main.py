@@ -1,3 +1,4 @@
+from datetime import datetime
 import streamlit as st
 
 from fiis.get_fiis import get_data
@@ -9,6 +10,10 @@ df = get_data()
 
 
 ########################################### SIDEBAR FILTERS
+atualizado = df['Data Atualização'].min().strftime('%d/%m/%Y')
+st.sidebar.text(f'Atualizado em {atualizado}')
+
+
 st.sidebar.header('Filtros')
 
 
@@ -82,6 +87,8 @@ df['Ticker'] = df['Ticker'].apply(lambda x: f'<a href="{INVESTIDOR10_BASE_URL}{x
 df = df.drop(columns=df.filter(regex='(approved$|rank$)').columns)
 df = df.reset_index(drop=True).reset_index().rename(columns={'index': 'Rank'})
 df['Rank'] = df['Rank'] + 1
+
+df = df.drop(columns=['Data Atualização'])
 
 def format_sufix_money(value):
     if value >= 1_000_000_000:

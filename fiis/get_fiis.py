@@ -38,11 +38,13 @@ def get_data() -> pd.DataFrame:
     df = df.merge(fundamentus_df, how='left', on='Ticker')
     df = df[['Ticker', 'Tipo', 'Segmento', 'Cotação', 'P/VP', 'Dividend Yield', 'Liquidez Diária',
              'Qtd de imóveis', 'Vacância', 'Variação 12M', 'Tipo de Gestão', 'Público Alvo', 'Valor de Mercado',
-             'Valor Patrimonial', 'Número de Cotistas', 'Último Rendimento', 'Taxa de Administração']]
+             'Valor Patrimonial', 'Número de Cotistas', 'Último Rendimento', 'Taxa de Administração', 'Data Atualização']]
 
     df['dy_rank'] = df['Dividend Yield'].rank(ascending=False)
     df['p_vp_rank'] = df['P/VP'].rank()
     df['rank'] = df['dy_rank'] + df['p_vp_rank']
     df = df.sort_values(by='rank')
+
+    df['Data Atualização'] = pd.to_datetime(df['Data Atualização'])
 
     return df
