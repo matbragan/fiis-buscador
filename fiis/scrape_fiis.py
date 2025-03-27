@@ -1,8 +1,10 @@
 import os
 import re
 import sys
-import requests
+import logging
 from datetime import datetime
+
+import requests
 import pandas as pd
 from bs4 import BeautifulSoup
 
@@ -10,11 +12,24 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from fiis.constants import INVESTIDOR10_BASE_URL, HEADERS, FILE_NAME
 
 
+log_format = '%(asctime)s - %(levelname)s - %(message)s'
+logging.basicConfig(format=log_format, level=logging.INFO)
+
+
+def get_downloads_path() -> str:
+    '''Retorna o caminho da pasta downloads, um nível acima do diretório do script.'''
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    parent_dir = os.path.dirname(script_dir)
+    return os.path.join(parent_dir, 'downloads')
+
+
 def ensure_downloads_folder() -> None:
-    ''' Cria a pasta downloads se ela não existir. '''
-    if not os.path.exists('downloads'):
-        os.makedirs('downloads')
-        print('Pasta "downloads" criada com sucesso!')
+    '''Cria a pasta 'downloads' um nível acima do diretório do script, se não existir.'''
+    downloads_path = get_downloads_path()
+
+    if not os.path.exists(downloads_path):
+        os.makedirs(downloads_path)
+        logging.info(f'Pasta "downloads" criada em: {downloads_path}')
 
 
 def write_csv_file(data: pd.DataFrame, file_name: str) -> None:
@@ -26,8 +41,9 @@ def write_csv_file(data: pd.DataFrame, file_name: str) -> None:
         file_name (str): Nome do arquivo CSV.
     '''
     ensure_downloads_folder()
-    data.to_csv(f'downloads/{file_name}.csv', index=False)
-    print(f'Arquivo {file_name}.csv escrito com sucesso!')
+    downloads_path = get_downloads_path()
+    data.to_csv(f'{downloads_path}/{file_name}.csv', index=False)
+    logging.info(f'Arquivo {file_name}.csv escrito com sucesso!')
 
 
 class FIIsScraper:
@@ -53,7 +69,7 @@ class FIIsScraper:
         if response.status_code == 200:
             return BeautifulSoup(response.text, 'html.parser')
         else:
-            print(f'Erro na requisição: {response.status_code}')
+            logging.error(f'Erro na requisição: {response.status_code}')
             exit(1)
 
     
@@ -222,17 +238,17 @@ class FIIsScraper:
         '''
         all_fiis = pd.DataFrame()
         
-        print('Leitura de FIIs do site Investidor10 iniciando...')
+        logging.info('Leitura de FIIs do site Investidor10 iniciando...')
         for page in range(1, 16):
             fiis = self.get_fiis(page=page)
             if fiis.empty:
                 break
-            print(f'Leitura de FIIs da página {page} feita com sucesso!')
+            logging.info(f'Leitura de FIIs da página {page} feita com sucesso!')
             all_fiis = pd.concat([all_fiis, fiis], ignore_index=True)
         
         all_fiis['Data Atualização'] = datetime.now()
 
-        print('Todos FIIs obtidos com sucesso!')
+        logging.info('Todos FIIs obtidos com sucesso!')
         return all_fiis
 
 
