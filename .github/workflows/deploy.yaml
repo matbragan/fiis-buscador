@@ -22,5 +22,5 @@ jobs:
           REMOTE_USER: "ubuntu"
           ARGS: "-rltgoDzvO --delete"
           SOURCE: "./"
-          EXCLUDE: "downloads/"
+          EXCLUDE: "downloads/, logs/"
           TARGET: "/home/ubuntu/fiis-buscador/"

@@ -4,7 +4,8 @@ HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
 }
 
-FILE_NAME = 'fiis'
+INVESTIDOR10_FILE_NAME = 'investidor10_fiis'
+FUNDAMENTUS_FILE_NAME = 'fundamentus_fiis'
 
 PERCENT_COLS = ['Dividend Yield', 'Vacância', 'Variação 12M']
 MONEY_COLS = ['Cotação', 'Liquidez Diária', 'Valor de Mercado', 'Último Rendimento', 'Valor Patrimonial']
