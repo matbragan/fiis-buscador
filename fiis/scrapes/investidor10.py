@@ -8,8 +8,8 @@ import requests
 import pandas as pd
 from bs4 import BeautifulSoup
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from fiis.constants import INVESTIDOR10_BASE_URL, HEADERS
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+from fiis.constants import INVESTIDOR10_BASE_URL, HEADERS, INVESTIDOR10_FILE_NAME
 from fiis.utils import write_csv_file
 
 
@@ -227,4 +227,4 @@ if __name__ == '__main__':
     FIIsScraper = Investidor10Scraper()
     fiis = FIIsScraper.get_all_fiis()
     
-    write_csv_file(data=fiis, file_name='investidor10_fiis.csv')
+    write_csv_file(data=fiis, file_name=INVESTIDOR10_FILE_NAME)

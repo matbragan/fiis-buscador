@@ -1,22 +1,22 @@
-import requests
 import pandas as pd
 
-from fiis.constants import FUNDAMENTUS_URL, HEADERS, FILE_NAME
+from fiis.constants import INVESTIDOR10_FILE_NAME, FUNDAMENTUS_FILE_NAME
 
 
-def get_fundamentus_data() -> pd.DataFrame:
+def join_scrapes() -> pd.DataFrame:
     ''' 
-    Obtém os dados de FIIs do Fundamentus.
+    Junta os dados obtidos dos scrapes dos sites Investidor10 e Fundamentus.
 
     Returns:
-        pd.DataFrame: Um DataFrame contendo os dados dos FIIs do Fundamentus.
+        pd.DataFrame: Um DataFrame contendo os dados dos FIIs.
     '''
-    response = requests.get(FUNDAMENTUS_URL, headers=HEADERS)
-    if response.status_code == 200:
-        df = pd.read_html(response.content, decimal=',', thousands='.')[0]
-    else:
-        print(f'Erro na requisição do Fundamentus: {response.status_code}')
-        return
+    investidor10_df = pd.read_csv(f'downloads/{INVESTIDOR10_FILE_NAME}.csv')
+    fundamentus_df = pd.read_csv(f'downloads/{FUNDAMENTUS_FILE_NAME}.csv')
+
+    fundamentus_df = fundamentus_df.rename(columns={'Papel': 'Ticker'})
+    fundamentus_df = fundamentus_df[['Ticker', 'Qtd de imóveis', 'Valor de Mercado']]
+
+    df = investidor10_df.merge(fundamentus_df, how='left', on='Ticker')
 
     return df
 
@@ -29,13 +29,8 @@ def get_data() -> pd.DataFrame:
     Returns:
         pd.DataFrame: Um DataFrame contendo os dados dos FIIs.
     '''
-    df = pd.read_csv(f'downloads/{FILE_NAME}.csv')
+    df = join_scrapes()
     
-    fundamentus_df = get_fundamentus_data()
-    fundamentus_df = fundamentus_df.rename(columns={'Papel': 'Ticker'})
-    fundamentus_df = fundamentus_df[['Ticker', 'Qtd de imóveis', 'Valor de Mercado']]
-
-    df = df.merge(fundamentus_df, how='left', on='Ticker')
     df = df[['Ticker', 'Tipo', 'Segmento', 'Cotação', 'P/VP', 'Dividend Yield', 'Liquidez Diária',
              'Qtd de imóveis', 'Vacância', 'Variação 12M', 'Tipo de Gestão', 'Público Alvo', 'Valor de Mercado',
              'Valor Patrimonial', 'Número de Cotistas', 'Último Rendimento', 'Taxa de Administração', 'Data Atualização']]
