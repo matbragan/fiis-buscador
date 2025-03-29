@@ -1,6 +1,8 @@
 INVESTIDOR10_BASE_URL = 'https://investidor10.com.br/fiis/'
 FUNDAMENTUS_URL = 'https://www.fundamentus.com.br/fii_resultado.php'
-HEADERS = {'User-Agent': 'Mozilla/5.0'}
+HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+}
 
 INVESTIDOR10_FILE_NAME = 'investidor10_fiis'
 FUNDAMENTUS_FILE_NAME = 'fundamentus_fiis'
