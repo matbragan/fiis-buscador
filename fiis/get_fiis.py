@@ -1,6 +1,10 @@
+import os
+import sys
+
 import requests
 import pandas as pd
 
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from fiis.constants import FUNDAMENTUS_URL, HEADERS, FILE_NAME
 
 
@@ -48,3 +52,7 @@ def get_data() -> pd.DataFrame:
     df['Data Atualização'] = pd.to_datetime(df['Data Atualização'])
 
     return df
+
+
+if __name__ == '__main__':
+    df = get_fundamentus_data()
