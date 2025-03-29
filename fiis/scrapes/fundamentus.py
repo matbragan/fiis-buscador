@@ -34,9 +34,9 @@ def get_fundamentus_data(max_retries: int = 20) -> pd.DataFrame:
             if retry == max_retries:
                 logging.warning(f'Tentativas excedidas {max_retries}: Erro 403, a requisição foi bloqueada pelo site.')
                 return
-            retry += 1
             logging.error(f'Tentativa {retry + 1}: Erro 403, a requisição foi bloqueada pelo site. Tentando novamente...')
             time.sleep(2)
+            retry += 1
         else:
             logging.error(f'Erro na requisição: {response.status_code}')
             return
