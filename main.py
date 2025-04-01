@@ -9,8 +9,8 @@ df = get_data()
 
 
 ########################################### SIDEBAR FILTERS
-atualizado = df['Data Atualização'].min().strftime('%d/%m/%Y')
-st.sidebar.text(f'Atualizado em {atualizado}')
+atualizado = df['Data Atualização'].min().strftime('%d/%m/%Y %Hh%Mmin')
+st.sidebar.text(f'Atualizado {atualizado}')
 
 
 st.sidebar.header('Filtros')
