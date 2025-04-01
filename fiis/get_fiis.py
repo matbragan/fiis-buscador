@@ -1,3 +1,4 @@
+from tzlocal import get_localzone
 import pandas as pd
 
 from fiis.constants import INVESTIDOR10_FILE_NAME, FUNDAMENTUS_FILE_NAME
@@ -40,6 +41,7 @@ def get_data() -> pd.DataFrame:
     df['rank'] = df['dy_rank'] + df['p_vp_rank']
     df = df.sort_values(by='rank')
 
-    df['Data Atualização'] = pd.to_datetime(df['Data Atualização'])
+    local_tz = get_localzone()
+    df['Data Atualização'] = pd.to_datetime(df['Data Atualização']).dt.tz_localize(local_tz).dt.tz_convert('America/Sao_Paulo')
 
     return df
