@@ -24,3 +24,23 @@ jobs:
           SOURCE: "./"
           EXCLUDE: "downloads/, logs/"
           TARGET: "/home/ubuntu/fiis-buscador/"
+
+      - name: Check if requirements.txt changed
+        id: check_requirements
+        run: |
+          if git diff --name-only HEAD^ HEAD | grep -q "requirements.txt"; then
+            echo "changed=true" >> $GITHUB_ENV
+          else
+            echo "changed=false" >> $GITHUB_ENV
+          fi
+
+      - name: Install dependencies if requirements.txt changed
+        if: env.changed == 'true'
+        uses: appleboy/ssh-action@master
+        with:
+          host: "3.23.87.193"
+          username: "ubuntu"
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd /home/ubuntu/fiis-buscador/
+            pip install -r requirements.txt
