@@ -16,9 +16,10 @@ st.sidebar.text(f'Atualizado em {atualizado}')
 st.sidebar.header('Filtros')
 
 
-ticker = st.sidebar.text_input('Ticker')
-if ticker:
-    df = df[df['Ticker'].str.contains(ticker, case=False, na=False)]
+tickers_list = sorted(df['Ticker'].dropna().unique())
+tickers = st.sidebar.multiselect('Ticker(s)', options=tickers_list, default=None)
+if tickers:
+    df = df[df['Ticker'].isin(tickers)]
 
 
 ordem_personalizada = ['Fundo de Tijolo', 'Fundo de Papel']
