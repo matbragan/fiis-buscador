@@ -11,3 +11,13 @@ PERCENT_COLS = ['Dividend Yield', 'Vacância', 'Variação 12M']
 MONEY_COLS = ['Cotação', 'Liquidez Diária', 'Valor de Mercado', 'Último Rendimento', 'Valor Patrimonial']
 FLOAT_COLS = ['P/VP']
 INT_COLS = ['Rank', 'Qtd de imóveis', 'Número de Cotistas']
+
+MY_FIIS = [
+    'NEWL11',
+    'BTLG11',
+    'TVRI11',
+    'RZTR11',
+    'RECR11',
+    'GGRC11',
+    'RZAT11',
+]

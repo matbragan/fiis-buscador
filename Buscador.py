@@ -3,7 +3,7 @@ import streamlit as st
 from fiis.get_fiis import get_data
 from fiis.constants import INVESTIDOR10_BASE_URL, PERCENT_COLS, MONEY_COLS, FLOAT_COLS, INT_COLS
 
-st.set_page_config(page_title='FIIs', layout='wide')
+st.set_page_config(page_title='Buscador de FIIs', layout='wide')
 
 df = get_data()
 
