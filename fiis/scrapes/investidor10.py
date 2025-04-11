@@ -96,7 +96,11 @@ class Investidor10Scraper:
         match tipo_gestao:
             case 'Passive':
                 tipo_gestao = 'Passiva'
+            case 'fii.PASSIVE':
+                tipo_gestao = 'Passiva'
             case 'Active':
+                tipo_gestao = 'Ativa'
+            case 'fii.ACTIVE':
                 tipo_gestao = 'Ativa'
             case _:
                 pass

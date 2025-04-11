@@ -31,10 +31,12 @@ def get_data() -> pd.DataFrame:
         pd.DataFrame: Um DataFrame contendo os dados dos FIIs.
     '''
     df = join_scrapes()
+
+    df['Último Yield'] = (df['Último Rendimento'] / df['Cotação'] * 100).where(df['Cotação'] != 0, 0)
     
-    df = df[['Ticker', 'Tipo', 'Segmento', 'Cotação', 'P/VP', 'Dividend Yield', 'Liquidez Diária',
-             'Qtd de imóveis', 'Vacância', 'Variação 12M', 'Tipo de Gestão', 'Público Alvo', 'Valor de Mercado',
-             'Valor Patrimonial', 'Número de Cotistas', 'Último Rendimento', 'Taxa de Administração', 'Data Atualização']]
+    df = df[['Ticker', 'Tipo', 'Segmento', 'Cotação', 'P/VP', 'Dividend Yield', 'Liquidez Diária', 'Qtd de imóveis', 
+             'Vacância', 'Variação 12M', 'Tipo de Gestão', 'Último Rendimento', 'Último Yield', 'Valor de Mercado', 
+             'Valor Patrimonial', 'Número de Cotistas', 'Público Alvo', 'Taxa de Administração', 'Data Atualização']]
 
     df['dy_rank'] = df['Dividend Yield'].rank(ascending=False)
     df['p_vp_rank'] = df['P/VP'].rank()

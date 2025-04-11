@@ -7,7 +7,7 @@ HEADERS = {
 INVESTIDOR10_FILE_NAME = 'investidor10_fiis'
 FUNDAMENTUS_FILE_NAME = 'fundamentus_fiis'
 
-PERCENT_COLS = ['Dividend Yield', 'Vacância', 'Variação 12M']
+PERCENT_COLS = ['Dividend Yield', 'Vacância', 'Variação 12M', 'Último Yield']
 MONEY_COLS = ['Cotação', 'Liquidez Diária', 'Valor de Mercado', 'Último Rendimento', 'Valor Patrimonial']
 FLOAT_COLS = ['P/VP']
 INT_COLS = ['Rank', 'Qtd de imóveis', 'Número de Cotistas']
