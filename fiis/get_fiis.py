@@ -32,7 +32,12 @@ def get_data() -> pd.DataFrame:
     '''
     df = join_scrapes()
 
+    df.fillna(0, inplace=True)
+
     df['Último Yield'] = (df['Último Rendimento'] / df['Cotação'] * 100).where(df['Cotação'] != 0, 0)
+    
+    df['Cálculo Valor de Mercado'] = df['Cotação'] * df['Cotas Emitidas']
+    df['Valor de Mercado'] = df['Cálculo Valor de Mercado'].where(df['Cálculo Valor de Mercado'] != 0, df['Valor de Mercado'])
     
     df = df[['Ticker', 'Tipo', 'Segmento', 'Cotação', 'P/VP', 'Dividend Yield', 'Liquidez Diária', 'Qtd de imóveis', 
              'Vacância', 'Variação 12M', 'Tipo de Gestão', 'Último Rendimento', 'Último Yield', 'Valor de Mercado', 
