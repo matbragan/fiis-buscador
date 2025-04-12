@@ -32,8 +32,11 @@ jobs:
           host: "3.23.87.193"
           username: "ubuntu"
           script: |
+            export PATH="$HOME/.pyenv/bin:$PATH"
+            eval "$(pyenv init -)"
+            eval "$(pyenv virtualenv-init -)"
+            
             cd /home/ubuntu/fiis-buscador/
-            export PATH=$PATH:/home/ubuntu/.local/bin
-            $(which pip) install -r requirements.txt
+            pip install -r requirements.txt
             pkill -f streamlit || true
             nohup streamlit run main.py > logs/streamlit.log 2>&1 &
