@@ -33,6 +33,6 @@ jobs:
           username: "ubuntu"
           script: |
             cd /home/ubuntu/fiis-buscador/
-            pip install -r requirements.txt
+            pip3 install -r requirements.txt
             pkill -f streamlit
             nohup streamlit run main.py > logs/streamlit.log 2>&1 &
