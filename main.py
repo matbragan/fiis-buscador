@@ -107,11 +107,9 @@ for col in df.columns:
     for col in PERCENT_COLS:
         formatters[col] = lambda x: f'{x:,.2f}%'.replace(',', 'TEMP').replace('.', ',').replace('TEMP', '.')
     for col in MONEY_COLS:
-        if col in ['Valor Patrimonial']:
-            break
         if col in ['Valor de Mercado', 'Liquidez Diária']:
             formatters[col] = lambda x: format_sufix_money(x)
-        else:
+        elif not col in ['Valor Patrimonial']:
             formatters[col] = lambda x: f'R$ {x:,.2f}'.replace(',', 'TEMP').replace('.', ',').replace('TEMP', '.')
     for col in FLOAT_COLS:
         formatters[col] = lambda x: f'{x:,.2f}'.replace(',', 'TEMP').replace('.', ',').replace('TEMP', '.')
