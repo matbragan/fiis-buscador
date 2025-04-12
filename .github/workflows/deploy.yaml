@@ -34,10 +34,8 @@ jobs:
           script: |
             cd /home/ubuntu/fiis-buscador/
             export PATH=$PATH:/usr/local/bin
-            which python
-            which pip
-            python --version
-            pip --version
-          #  pip install -r requirements.txt
-          #  pkill -f streamlit || true
-          #  nohup streamlit run main.py > logs/streamlit.log 2>&1 &
+            which python || sudo apt update && sudo apt install -y python
+            which pip || sudo apt install -y python-pip
+            pip install -r requirements.txt
+            pkill -f streamlit || true
+            nohup streamlit run main.py > logs/streamlit.log 2>&1 &
