@@ -33,15 +33,33 @@ jobs:
           username: "ubuntu"
           script: |
             set -e
-            
+
             export PATH="$HOME/.pyenv/bin:$PATH"
+            eval "$(pyenv init --path)"
             eval "$(pyenv init -)"
             eval "$(pyenv virtualenv-init -)"
-            
+
             cd /home/ubuntu/fiis-buscador/
+
+            echo "Installing dependencies..."
             pip install -r requirements.txt
-            echo "killing streamlit"
-            pkill -f streamlit || true
-            echo "starting streamlit"
+
+            echo "Trying to kill existing Streamlit processes..."
+            if pgrep -f streamlit; then
+              pkill -f streamlit
+              echo "Streamlit process killed"
+            else
+              echo "No existing Streamlit process found"
+            fi
+
+            echo "Starting Streamlit app..."
             nohup streamlit run main.py > logs/streamlit.log 2>&1 &
-            echo "streamlit started"
+
+            sleep 5
+            if pgrep -f streamlit; then
+              echo "✅ Streamlit started successfully"
+            else
+              echo "❌ Failed to start Streamlit. Log output:"
+              tail -n 30 logs/streamlit.log
+              exit 1
+            fi
