@@ -33,10 +33,7 @@ jobs:
           username: "ubuntu"
           script: |
             cd /home/ubuntu/fiis-buscador/
-            source ~/.bashrc || true
-            export PATH=$PATH:/home/ubuntu/.local/bin:/usr/local/bin:/usr/bin
-            which python || echo "Python not found"
-            which pip || echo "Pip not found"
-            pip install -r requirements.txt
+            export PATH=$PATH:/home/ubuntu/.local/bin
+            $(which pip) install -r requirements.txt
             pkill -f streamlit || true
             nohup streamlit run main.py > logs/streamlit.log 2>&1 &
