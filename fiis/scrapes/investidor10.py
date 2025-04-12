@@ -81,6 +81,10 @@ class Investidor10Scraper:
         variacao12m = variacao12m.find_next('span').text.strip() if variacao12m else 'N/A'
         variacao12m = float(variacao12m.replace('%', '').replace(' ', '').replace('.', '').replace(',', '.')) if variacao12m not in ['-', 'N/A', ''] else 0
 
+        cnpj = soup.find('span', string=re.compile(r'CNPJ', re.IGNORECASE))
+        cnpj = cnpj.find_parent('div', class_='desc').find('div', class_='value').find('span').get_text(strip=True) if cnpj else 'N/A'
+        cnpj = cnpj.replace('.', '').replace('/', '').replace('-', '')
+
         publico_alvo = soup.find('span', string=re.compile(r'PÚBLICO-ALVO', re.IGNORECASE))
         publico_alvo = publico_alvo.find_parent('div', class_='desc').find('div', class_='value').find('span').get_text(strip=True) if publico_alvo else 'N/A'
         match publico_alvo:
@@ -129,7 +133,7 @@ class Investidor10Scraper:
         ult_rendimento = ult_rendimento.replace('R$ ', '').replace(' ', '')
         ult_rendimento = float(ult_rendimento.replace('.', '').replace(',', '.')) if ult_rendimento not in ['-', 'N/A', ''] else 0
 
-        data.append([cotacao, liquidez, variacao12m, publico_alvo, tipo_gestao, taxa_adm, vacancia, nro_cotistas, cotas_emitidas, vl_patrimonial, ult_rendimento])
+        data.append([cotacao, liquidez, variacao12m, cnpj, publico_alvo, tipo_gestao, taxa_adm, vacancia, nro_cotistas, cotas_emitidas, vl_patrimonial, ult_rendimento])
 
         return data[0]
 
@@ -199,8 +203,8 @@ class Investidor10Scraper:
             plus_data = self.get_fii_data(ticker=ticker)
             data.append(basic_data + plus_data)
 
-        columns = ['Ticker', 'Nome', 'P/VP', 'Dividend Yield', 'Tipo', 'Segmento', 'Cotação', 
-                   'Liquidez Diária', 'Variação 12M', 'Público Alvo', 'Tipo de Gestão', 'Taxa de Administração', 
+        columns = ['Ticker', 'Nome', 'P/VP', 'Dividend Yield', 'Tipo', 'Segmento', 'Cotação', 'Liquidez Diária', 
+                   'Variação 12M', 'CNPJ', 'Público Alvo', 'Tipo de Gestão', 'Taxa de Administração', 
                    'Vacância', 'Número de Cotistas', 'Cotas Emitidas', 'Valor Patrimonial', 'Último Rendimento']
 
         df = pd.DataFrame(data, columns=columns)
