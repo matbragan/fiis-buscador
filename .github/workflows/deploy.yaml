@@ -38,5 +38,8 @@ jobs:
             
             cd /home/ubuntu/fiis-buscador/
             pip install -r requirements.txt
+            echo "killing streamlit"
             pkill -f streamlit || true
+            echo "starting streamlit"
             nohup streamlit run main.py > logs/streamlit.log 2>&1 &
+            echo "streamlit started"
