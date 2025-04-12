@@ -32,6 +32,8 @@ jobs:
           host: "3.23.87.193"
           username: "ubuntu"
           script: |
+            set -e
+            
             export PATH="$HOME/.pyenv/bin:$PATH"
             eval "$(pyenv init -)"
             eval "$(pyenv virtualenv-init -)"
