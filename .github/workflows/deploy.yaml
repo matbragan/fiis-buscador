@@ -46,7 +46,7 @@ jobs:
 
             echo "Trying to kill existing Streamlit processes..."
             if pgrep -f streamlit; then
-              pkill -f streamlit
+              pkill -f streamlit &
               echo "Streamlit process killed"
             else
               echo "No existing Streamlit process found"
