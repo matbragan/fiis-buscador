@@ -1,0 +1,1 @@
+BASE_URL = 'https://fnet.bmfbovespa.com.br/fnet/publico/abrirGerenciadorDocumentosCVM'
