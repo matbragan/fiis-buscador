@@ -128,6 +128,8 @@ css = '''
         color: white;
         text-align: center !important;
         padding: 10px;
+        height: 100px;
+        font-size: 16px;
     }
     td {
         text-align: center !important;
