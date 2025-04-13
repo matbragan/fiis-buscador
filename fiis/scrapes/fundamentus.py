@@ -1,12 +1,12 @@
-import os
-import sys
+import sys, os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+
 import time
 import logging
 
 import requests
 import pandas as pd
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 from fiis.constants import FUNDAMENTUS_URL, HEADERS, FUNDAMENTUS_FILE_NAME
 from fiis.utils import write_csv_file
 
