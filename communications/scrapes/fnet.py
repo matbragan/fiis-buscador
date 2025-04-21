@@ -1,6 +1,7 @@
 import os, sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
+import logging
 from datetime import datetime
 
 from selenium import webdriver
@@ -11,6 +12,10 @@ from selenium.webdriver.support import expected_conditions as EC
 import pandas as pd
 
 from communications.constants import FNET_BASE_URL, TICKERS, COMMUNICATIONS_FILE_NAME
+
+
+log_format = '%(asctime)s - %(levelname)s - %(message)s'
+logging.basicConfig(format=log_format, level=logging.INFO)
 
 
 def get_cnpj_by_ticker(
@@ -62,6 +67,8 @@ def get_fii_communications(
     df['CNPJ'] = cnpj
     df = df[['Ticker' , 'CNPJ', 'Categoria', 'Tipo', 'Data de Referência', 'Data de Entrega', 'Status', 'Versão']]
 
+    logging.info(f'{ticker} - {len(df)} comunicados')
+
     return df
 
 
@@ -76,6 +83,8 @@ def get_many_fii_communications(
     df = pd.concat(dfs)
 
     df['Data Atualização'] = datetime.now()
+
+    logging.info('Todos comunicados obtidos com sucesso!')
     
     return df
 
