@@ -1,7 +1,7 @@
 from tzlocal import get_localzone
 import pandas as pd
 
-from fiis.constants import INVESTIDOR10_FILE_NAME, FUNDAMENTUS_FILE_NAME
+from src.constants import INVESTIDOR10_FILE_NAME, FUNDAMENTUS_FILE_NAME
 
 
 def join_scrapes() -> pd.DataFrame:

@@ -3,8 +3,8 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import streamlit as st
 import pandas as pd
-from communications.get_communications import get_data
-from communications.constants import FNET_BASE_URL
+from src.get_communications import get_data
+from src.constants import FNET_BASE_URL
 
 st.set_page_config(page_title='Comunicados dos FIIs', layout='wide')
 
@@ -12,7 +12,7 @@ df = get_data()
 
 ########################################### PERSISTÊNCIA DOS CHECKBOXES
 
-PERSISTENCE_FILE = 'communications/read.json'
+PERSISTENCE_FILE = 'communications_read.json'
 
 # Função para carregar os dados do JSON
 def load_checkbox_state():

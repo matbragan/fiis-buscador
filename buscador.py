@@ -1,7 +1,7 @@
 import streamlit as st
 
-from fiis.get_fiis import get_data
-from fiis.constants import INVESTIDOR10_BASE_URL, PERCENT_COLS, MONEY_COLS, FLOAT_COLS, INT_COLS
+from src.get_fiis import get_data
+from src.constants import INVESTIDOR10_BASE_URL, FAVORITE_TICKERS, PERCENT_COLS, MONEY_COLS, FLOAT_COLS, INT_COLS
 
 st.set_page_config(page_title='Buscador de FIIs', layout='wide')
 
@@ -77,6 +77,14 @@ liquidez_min = numeric_cast(liquidez_min_str)*1000 if liquidez_min_str else None
 
 if liquidez_min:
     df = df[df['Liquidez Diária'] >= liquidez_min]
+
+
+st.sidebar.divider()
+
+
+favorites = st.sidebar.toggle('Favoritos')
+if favorites:
+    df = df[df['Ticker'].isin(FAVORITE_TICKERS)]
 
 
 ########################################### MAIN TABLE

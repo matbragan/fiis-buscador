@@ -1,7 +1,7 @@
 from tzlocal import get_localzone
 import pandas as pd
 
-from communications.constants import COMMUNICATIONS_FILE_NAME
+from src.constants import COMMUNICATIONS_FILE_NAME
 
 
 def get_data() -> pd.DataFrame:

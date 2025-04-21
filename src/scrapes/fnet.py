@@ -12,7 +12,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import pandas as pd
 
-from communications.constants import FNET_BASE_URL, TICKERS, COMMUNICATIONS_FILE_NAME
+from src.constants import FNET_BASE_URL, FAVORITE_TICKERS, COMMUNICATIONS_FILE_NAME
 
 
 log_format = '%(asctime)s - %(levelname)s - %(message)s'
@@ -92,5 +92,5 @@ def get_many_fii_communications(
 
 
 if __name__ == '__main__':
-    df = get_many_fii_communications(TICKERS)
+    df = get_many_fii_communications(FAVORITE_TICKERS)
     df.to_csv(f'downloads/{COMMUNICATIONS_FILE_NAME}.csv', index=False)

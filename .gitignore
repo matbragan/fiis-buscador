@@ -172,4 +172,4 @@ cython_debug/
 
 dev.ipynb
 *.pem
-communications/read.json
+communications_read.json

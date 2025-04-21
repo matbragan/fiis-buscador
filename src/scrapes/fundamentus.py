@@ -7,8 +7,8 @@ import logging
 import requests
 import pandas as pd
 
-from fiis.constants import FUNDAMENTUS_URL, HEADERS, FUNDAMENTUS_FILE_NAME
-from fiis.utils import write_csv_file
+from src.constants import FUNDAMENTUS_URL, HEADERS, FUNDAMENTUS_FILE_NAME
+from src.utils import write_csv_file
 
 
 log_format = '%(asctime)s - %(levelname)s - %(message)s'

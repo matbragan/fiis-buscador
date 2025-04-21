@@ -9,8 +9,8 @@ import requests
 import pandas as pd
 from bs4 import BeautifulSoup
 
-from fiis.constants import INVESTIDOR10_BASE_URL, HEADERS, INVESTIDOR10_FILE_NAME
-from fiis.utils import write_csv_file
+from src.constants import INVESTIDOR10_BASE_URL, HEADERS, INVESTIDOR10_FILE_NAME
+from src.utils import write_csv_file
 
 
 log_format = '%(asctime)s - %(levelname)s - %(message)s'
