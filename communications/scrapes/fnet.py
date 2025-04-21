@@ -3,6 +3,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')
 
 import logging
 from datetime import datetime
+import tempfile
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -34,6 +35,7 @@ def get_fii_communications(
     options.add_argument('--headless')
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
+    options.add_argument(f'--user-data-dir={tempfile.mkdtemp()}')
 
     driver = webdriver.Chrome(options=options)
 
