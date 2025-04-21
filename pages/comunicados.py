@@ -62,6 +62,20 @@ df['Lido'] = df['ID'].map(lambda x: st.session_state.read.get(x, False))
 
 st.title(f"{df['Ticker'].nunique()} FIIs")
 
+unique_tickers = df[['Ticker', 'CNPJ']].drop_duplicates()
+
+# Monta os links no formato HTML
+links = [
+    f'<a href="{FNET_BASE_URL}?cnpjFundo={row.CNPJ}" target="_blank">{row.Ticker}</a>'
+    for _, row in unique_tickers.iterrows()
+]
+
+# Junta os links com " | "
+link_bar = ' | '.join(links)
+
+# Exibe os links no topo da página
+st.markdown(f"##### Documentos - {link_bar}", unsafe_allow_html=True)
+
 # Exibe editor interativo
 edited_df = st.data_editor(
     df[['ID', 'Lido', 'Ticker', 'Categoria', 'Tipo', 'Data de Referência', 'Data de Entrega', 'Status', 'Versão']],
