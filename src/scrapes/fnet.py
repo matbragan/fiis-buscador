@@ -12,7 +12,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import pandas as pd
 
-from src.constants import FNET_BASE_URL, FAVORITE_TICKERS, COMMUNICATIONS_FILE_NAME
+from src.constants import FNET_BASE_URL, FAVORITE_TICKERS, COMMUNICATIONS_FILE_NAME, INVESTIDOR10_FILE_NAME
+from src.utils import get_downloads_path, write_csv_file
 
 
 log_format = '%(asctime)s - %(levelname)s - %(message)s'
@@ -22,7 +23,17 @@ logging.basicConfig(format=log_format, level=logging.INFO)
 def get_cnpj_by_ticker(
         ticker: str
 ) -> str:
-    df = pd.read_csv('downloads/investidor10_fiis.csv')
+    '''
+    Obtém o CNPJ de um FII pelo seu ticker.
+
+    Args:
+        ticker (str): Ticker do FII.
+
+    Returns:
+        str: CNPJ do FII.
+    '''
+    downloads_path = get_downloads_path()
+    df = pd.read_csv(os.path.join(downloads_path, f'{INVESTIDOR10_FILE_NAME}.csv'))
     return df[df['Ticker'] == ticker]['CNPJ'].values[0]
 
 
@@ -30,7 +41,16 @@ def get_fii_communications(
         ticker: str,
         base_url: str = FNET_BASE_URL
 ) -> pd.DataFrame:
-    
+    '''
+    Obtém os 10 últimos comunicados de um FII, no site FNET.
+
+    Args:
+        ticker (str): Ticker do FII.
+        base_url (str): URL base para fazer a requisição.
+
+    Returns:
+        pd.DataFrame: Um DataFrame contendo os comunicados do FII.
+    '''
     options = Options()
     options.add_argument('--headless')
     options.add_argument('--no-sandbox')
@@ -78,7 +98,16 @@ def get_many_fii_communications(
         tickers: list,
         base_url: str = FNET_BASE_URL
 ) -> pd.DataFrame:
-    
+    '''
+    Obtém os 10 últimos comunicados de vários FII, no site FNET.
+
+    Args:
+        tickers (list): Lista de tickers dos FII.
+        base_url (str): URL base para fazer a requisição.
+
+    Returns:
+        pd.DataFrame: Um DataFrame contendo os comunicados dos FII.
+    '''
     dfs = []
     for ticker in tickers:
         dfs.append(get_fii_communications(ticker, base_url))
@@ -92,5 +121,6 @@ def get_many_fii_communications(
 
 
 if __name__ == '__main__':
-    df = get_many_fii_communications(FAVORITE_TICKERS)
-    df.to_csv(f'downloads/{COMMUNICATIONS_FILE_NAME}.csv', index=False)
+    communications = get_many_fii_communications(FAVORITE_TICKERS)
+    
+    write_csv_file(data=communications, file_name=COMMUNICATIONS_FILE_NAME)
