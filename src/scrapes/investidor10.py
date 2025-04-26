@@ -214,6 +214,10 @@ class Investidor10Scraper:
             plus_data = self.get_fii_data(ticker=ticker)
             data.append(basic_data + plus_data)
 
+        for i in range(len(data)):
+            if len(data[i]) < len(columns):
+                data[i] += [None] * (len(columns) - len(data[i]))
+
         df = pd.DataFrame(data, columns=columns)
 
         logging.info(f'Leitura de FIIs da página {page} feita com sucesso! ({len(df)} FIIs obtidos)')
