@@ -39,7 +39,9 @@ def get_cnpj_by_ticker(
 
 def get_fii_communications(
         ticker: str,
-        base_url: str = FNET_BASE_URL
+        base_url: str = FNET_BASE_URL,
+        attempt: int = 1,
+        max_attempts: int = 10
 ) -> pd.DataFrame:
     '''
     Obtém os 10 últimos comunicados de um FII, no site FNET.
@@ -47,6 +49,8 @@ def get_fii_communications(
     Args:
         ticker (str): Ticker do FII.
         base_url (str): URL base para fazer a requisição.
+        attempt (int): Tentativa atual de obtenção.
+        max_attempts (int): Número máximo de tentativas.
 
     Returns:
         pd.DataFrame: Um DataFrame contendo os comunicados do FII.
@@ -85,9 +89,16 @@ def get_fii_communications(
 
     df = pd.DataFrame(data, columns=columns)
 
+    if len(df) == 0:
+        if attempt < max_attempts:
+            logging.info(f'{ticker} - Nenhum comunicado encontrado, tentativa {attempt}/{max_attempts}...')
+            return get_fii_communications(ticker, base_url, attempt=attempt+1, max_attempts=max_attempts)
+        else:
+            logging.warning(f'{ticker} - Nenhum comunicado encontrado após {max_attempts} tentativas.')
+
     df['Ticker'] = ticker
     df['CNPJ'] = cnpj
-    df = df[['Ticker' , 'CNPJ', 'Categoria', 'Tipo', 'Data de Referência', 'Data de Entrega', 'Status', 'Versão']]
+    df = df[['Ticker', 'CNPJ', 'Categoria', 'Tipo', 'Data de Referência', 'Data de Entrega', 'Status', 'Versão']]
 
     logging.info(f'{ticker} - {len(df)} comunicados')
 
