@@ -40,8 +40,8 @@ class Investidor10Scraper:
         if response.status_code == 200:
             return BeautifulSoup(response.text, 'html.parser')
         else:
-            logging.error(f'Erro na requisição: {response.status_code}')
-            exit(1)
+            logging.error(f'Erro na requisição: {response.status_code} - rota: {route}')
+            return None
 
     
     def get_fii_data(self, ticker: str) -> list:
@@ -59,6 +59,9 @@ class Investidor10Scraper:
         soup = self.get_soup_request(route=route)
 
         data = []
+        
+        if soup is None:
+            return data
 
         cotacao = soup.find('span', string=f'{ticker.upper()} Cotação')
         cotacao = cotacao.find_next('span').text.strip() if cotacao else 'N/A'
@@ -152,6 +155,14 @@ class Investidor10Scraper:
         route = f'?page={page}'
         soup = self.get_soup_request(route=route)
 
+        columns = ['Ticker', 'Nome', 'P/VP', 'Dividend Yield', 'Tipo', 'Segmento', 'Cotação', 'Liquidez Diária', 
+                   'Variação 12M', 'CNPJ', 'Público Alvo', 'Tipo de Gestão', 'Taxa de Administração', 
+                   'Vacância', 'Número de Cotistas', 'Cotas Emitidas', 'Valor Patrimonial', 'Último Rendimento']
+
+        if soup is None:
+            logging.error(f'Erro ao obter dados da página {page}')
+            return pd.DataFrame(columns=columns)
+
         fii_cards = soup.find_all('div', class_='actions fii')
 
         data = []
@@ -203,12 +214,9 @@ class Investidor10Scraper:
             plus_data = self.get_fii_data(ticker=ticker)
             data.append(basic_data + plus_data)
 
-        columns = ['Ticker', 'Nome', 'P/VP', 'Dividend Yield', 'Tipo', 'Segmento', 'Cotação', 'Liquidez Diária', 
-                   'Variação 12M', 'CNPJ', 'Público Alvo', 'Tipo de Gestão', 'Taxa de Administração', 
-                   'Vacância', 'Número de Cotistas', 'Cotas Emitidas', 'Valor Patrimonial', 'Último Rendimento']
-
         df = pd.DataFrame(data, columns=columns)
 
+        logging.info(f'Leitura de FIIs da página {page} feita com sucesso! ({len(df)} FIIs obtidos)')
         return df
     
 
@@ -226,12 +234,11 @@ class Investidor10Scraper:
             fiis = self.get_fiis(page=page)
             if fiis.empty:
                 break
-            logging.info(f'Leitura de FIIs da página {page} feita com sucesso!')
             all_fiis = pd.concat([all_fiis, fiis], ignore_index=True)
         
         all_fiis['Data Atualização'] = datetime.now()
 
-        logging.info('Todos FIIs obtidos com sucesso!')
+        logging.info('Leitura de FIIs do site Investidor10 concluída!')
         return all_fiis
 
 
