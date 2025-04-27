@@ -34,7 +34,9 @@ def get_cnpj_by_ticker(
     '''
     downloads_path = get_downloads_path()
     df = pd.read_csv(os.path.join(downloads_path, f'{INVESTIDOR10_FILE_NAME}.csv'))
-    return df[df['Ticker'] == ticker]['CNPJ'].values[0]
+    cnpj = df[df['Ticker'] == ticker]['CNPJ'].values[0]
+    cnpj = cnpj.astype(str).replace('.0', '')
+    return cnpj
 
 
 def get_fii_communications(
@@ -86,6 +88,10 @@ def get_fii_communications(
         'Data de Referência', 'Data de Entrega',
         'Status', 'Versão', 'Modalidade de Envio', 'Ações'
     ]
+
+    # for i in range(len(data)):
+    #     if len(data[i]) < len(columns):
+    #         data[i] += [None] * (len(columns) - len(data[i]))
 
     df = pd.DataFrame(data, columns=columns)
 
