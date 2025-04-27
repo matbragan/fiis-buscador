@@ -235,7 +235,7 @@ class Investidor10Scraper:
         all_fiis = pd.DataFrame()
         
         logging.info('Leitura de FIIs do site Investidor10 iniciando...')
-        for page in range(3, 5):
+        for page in range(1, 16):
             fiis = self.get_fiis(page=page)
             if fiis.empty:
                 break
