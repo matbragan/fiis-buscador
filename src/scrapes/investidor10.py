@@ -155,8 +155,8 @@ class Investidor10Scraper:
         route = f'?page={page}'
         soup = self.get_soup_request(route=route)
 
-        columns = ['Ticker', 'Nome', 'P/VP', 'Dividend Yield', 'Tipo', 'Segmento', 'Cotação', 'Liquidez Diária', 
-                   'Variação 12M', 'CNPJ', 'Público Alvo', 'Tipo de Gestão', 'Taxa de Administração', 
+        columns = ['Ticker', 'Nome', 'P/VP', 'Dividend Yield', 'Tipo', 'Segmento', 'Dados Obtidos', 'Cotação', 
+                   'Liquidez Diária', 'Variação 12M', 'CNPJ', 'Público Alvo', 'Tipo de Gestão', 'Taxa de Administração', 
                    'Vacância', 'Número de Cotistas', 'Cotas Emitidas', 'Valor Patrimonial', 'Último Rendimento']
 
         if soup is None:
@@ -212,7 +212,8 @@ class Investidor10Scraper:
             basic_data = [ticker, nome, p_vp, dy, tipo, segmento]
 
             plus_data = self.get_fii_data(ticker=ticker)
-            data.append(basic_data + plus_data)
+            get_plus_data = True if len(plus_data) != 0 else False
+            data.append(basic_data + [get_plus_data] + plus_data)
 
         for i in range(len(data)):
             if len(data[i]) < len(columns):
@@ -234,7 +235,7 @@ class Investidor10Scraper:
         all_fiis = pd.DataFrame()
         
         logging.info('Leitura de FIIs do site Investidor10 iniciando...')
-        for page in range(1, 16):
+        for page in range(3, 5):
             fiis = self.get_fiis(page=page)
             if fiis.empty:
                 break

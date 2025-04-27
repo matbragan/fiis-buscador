@@ -86,6 +86,10 @@ favorites = st.sidebar.toggle('Favoritos')
 if favorites:
     df = df[df['Ticker'].isin(FAVORITE_TICKERS)]
 
+data_obtained = st.sidebar.toggle('Dados Obtidos')
+if data_obtained:
+    df = df[df['Dados Obtidos'] == True]
+
 
 ########################################### MAIN TABLE
 st.title(f'{df.shape[0]} FIIs')
