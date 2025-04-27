@@ -89,10 +89,6 @@ def get_fii_communications(
         'Status', 'Versão', 'Modalidade de Envio', 'Ações'
     ]
 
-    # for i in range(len(data)):
-    #     if len(data[i]) < len(columns):
-    #         data[i] += [None] * (len(columns) - len(data[i]))
-
     df = pd.DataFrame(data, columns=columns)
 
     if len(df) == 0:
