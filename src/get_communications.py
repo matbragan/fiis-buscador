@@ -1,3 +1,4 @@
+import re
 from tzlocal import get_localzone
 import pandas as pd
 from pandas.tseries.offsets import MonthEnd
@@ -14,8 +15,15 @@ def get_data() -> pd.DataFrame:
     local_tz = get_localzone()
     df['Data Atualização'] = pd.to_datetime(df['Data Atualização']).dt.tz_localize(local_tz).dt.tz_convert('America/Sao_Paulo')
 
-    df['Data de Referência'] = pd.to_datetime(df['Data de Referência'], dayfirst=True)
-    df['Data de Referência'] = df['Data de Referência'] + MonthEnd(0)
+    def parse_data_referencia(value):
+        value = str(value).strip()
+        # Se for do tipo "mm/yyyy", aplica tratamento especial
+        if re.fullmatch(r"\d{2}/\d{4}", value):
+            return pd.to_datetime(value, format="%m/%Y") + MonthEnd(1)
+        else:
+            return pd.to_datetime(value, dayfirst=True)
+
+    df['Data de Referência'] = df['Data de Referência'].apply(parse_data_referencia)
     
     df['Data de Entrega'] = pd.to_datetime(df['Data de Entrega'], dayfirst=True)
 
