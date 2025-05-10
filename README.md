@@ -21,12 +21,14 @@ Instalar libs de dependência
 pip install -r requirements.txt
 ~~~
 
-Fazer scrape local
+Fazer scrapes local
 ~~~sh
-python3 fiis/scrape_fiis.py
+python3 src/scrapes/fundamentus.py
+python3 src/scrapes/investidor10.py
+python3 src/scrapes/fnet.py
 ~~~
 
-Inicializar projeto
+Inicializar projeto local
 ~~~sh
-streamlit run main.py
+streamlit run buscador.py
 ~~~

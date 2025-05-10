@@ -173,3 +173,4 @@ cython_debug/
 dev.ipynb
 *.pem
 communications_read.json
+remote_json.json
