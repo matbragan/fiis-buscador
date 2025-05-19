@@ -121,6 +121,8 @@ def get_many_fii_communications(
     Returns:
         pd.DataFrame: Um DataFrame contendo os comunicados dos FII.
     '''
+    logging.info('Leitura de comunicados do site FNET iniciando...')
+
     dfs = []
     for ticker in tickers:
         dfs.append(get_fii_communications(ticker, base_url))

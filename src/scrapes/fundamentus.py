@@ -27,6 +27,8 @@ def get_fundamentus_data(
     Returns:
         pd.DataFrame: Um DataFrame contendo os dados dos FIIs do Fundamentus.
     '''
+    logging.info('Leitura de dados do site Fundamentus iniciando...')
+
     attempt = 1
     while True:
         response = requests.get(FUNDAMENTUS_URL, headers=HEADERS)
@@ -45,7 +47,8 @@ def get_fundamentus_data(
         else:
             logging.error(f'Erro na requisição: {response.status_code}')
             return
-
+        
+    logging.info('Leitura de dados do site Fundamentus concluida!')
     return df
 
 
