@@ -12,7 +12,7 @@ df = get_data()
 
 ########################################### PERSISTÊNCIA DOS CHECKBOXES
 
-PERSISTENCE_FILE = 'communications_read.json'
+PERSISTENCE_FILE = 'fnet_read.json'
 
 # Função para carregar os dados do JSON
 def load_checkbox_state():

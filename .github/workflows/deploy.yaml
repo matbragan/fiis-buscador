@@ -22,7 +22,7 @@ jobs:
           REMOTE_USER: "ubuntu"
           ARGS: "-rltgoDzvO --delete"
           SOURCE: "./"
-          EXCLUDE: "downloads/, logs/, communications_read.json, .git/, .github/, .gitignore, .env, README.md"
+          EXCLUDE: "downloads/, logs/, fnet_read.json, .git/, .github/, .gitignore, .env, README.md"
           TARGET: "/home/ubuntu/fiis-buscador/"
 
       - name: Run Streamlit project
