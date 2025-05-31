@@ -94,3 +94,18 @@ for i, row in edited_df.iterrows():
     st.session_state.read[row['ID']] = row['Lido']
 
 save_checkbox_state(st.session_state.read)
+
+# Conta quantos comunicados não lidos por Ticker
+unread_count = (
+    df[~df['Lido']]
+    .groupby('Ticker')
+    .size()
+    .sort_values(ascending=False)
+)
+
+if not unread_count.empty:
+    st.markdown("### 🔔 Comunicados não lidos por FII")
+    for ticker, count in unread_count.items():
+        st.markdown(f"- **{ticker}**: {count} comunicado(s) não lido(s)")
+else:
+    st.markdown("Todos os comunicados foram lidos!")
