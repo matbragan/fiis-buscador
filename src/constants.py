@@ -18,7 +18,7 @@ FAVORITE_TICKERS = [
     'GGRC11',
     'RZAT11',
     'GARE11',
-    'MXRF11',
+    # 'MXRF11',
 ]
 
 PERCENT_COLS = ['Dividend Yield', 'Vacância', 'Variação 12M', 'Último Yield']

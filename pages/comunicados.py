@@ -4,11 +4,12 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import streamlit as st
 import pandas as pd
 from src.get_communications import get_data
-from src.constants import FNET_BASE_URL
+from src.constants import FNET_BASE_URL, FAVORITE_TICKERS
 
 st.set_page_config(page_title='Comunicados dos FIIs', layout='wide')
 
 df = get_data()
+df = df[df['Ticker'].isin(FAVORITE_TICKERS)]
 
 ########################################### PERSISTÊNCIA DOS CHECKBOXES
 
@@ -78,7 +79,7 @@ st.markdown(f"##### Documentos - {link_bar}", unsafe_allow_html=True)
 
 # Exibe editor interativo
 edited_df = st.data_editor(
-    df[['ID', 'Lido', 'Ticker', 'Categoria', 'Tipo', 'Data de Referência', 'Data de Entrega', 'Status', 'Versão']],
+    df[['ID', 'Lido', 'Ticker', 'Categoria', 'Tipo', 'Mês de Referência', 'Data de Referência', 'Data de Entrega', 'Status', 'Versão']],
     column_config={
         'Lido': st.column_config.CheckboxColumn(label='Lido'),
         'ID': None,

@@ -29,6 +29,7 @@ def get_data() -> pd.DataFrame:
 
     df = df.sort_values(by=['Ticker', 'Data de Entrega', 'Versão'], ascending=[True, False, False])
 
+    df['Mês de Referência'] = df['Data de Referência'].dt.strftime('%B').str.capitalize()
     df['Data de Referência'] = df['Data de Referência'].dt.strftime('%Y/%m/%d')
     df['Data de Entrega'] = df['Data de Entrega'].dt.strftime('%Y/%m/%d %Hh%Mmin')
 
