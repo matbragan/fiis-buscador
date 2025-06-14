@@ -100,7 +100,6 @@ unread_count = (
     df[~df['Lido']]
     .groupby('Ticker')
     .size()
-    .sort_values(ascending=False)
 )
 
 if not unread_count.empty:
