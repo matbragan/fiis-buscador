@@ -163,25 +163,89 @@ class Investidor10Scraper:
             logging.error(f'Erro ao obter dados da página {page}')
             return pd.DataFrame(columns=columns)
 
-        fii_cards = soup.find_all('div', class_='actions fii')
+        # Find the table containing FII data
+        table = soup.find('table', id='rankigns')
+        if not table:
+            logging.error(f'Tabela não encontrada na página {page}')
+            return pd.DataFrame(columns=columns)
+
+        # Find all table rows (skip header row)
+        rows = table.find('tbody').find_all('tr') if table.find('tbody') else []
 
         data = []
         
-        for card in fii_cards:
-            ticker = card.find('h2', class_='ticker-name').text.strip()
-            nome = card.find('h3').text.strip()
+        for row in rows:
+            cells = row.find_all('td')
+            if len(cells) < 6:  # Ensure we have enough columns
+                continue
+                
+            # Extract ticker and name from the first column (Ativos)
+            ativos_cell = cells[0]
+            ticker_span = ativos_cell.find('span', class_='font-semibold')
+            if not ticker_span:
+                continue
+            ticker = ticker_span.text.strip()
             
-            p_vp = card.find('span', string='P/VP: ')
-            p_vp = p_vp.find_next('span').text.strip() if p_vp else 'N/A'
-            p_vp = float(p_vp.replace('.', '').replace(',', '.')) if p_vp not in ['-', 'N/A', ''] else 0
+            # Extract name from the second span in the same cell
+            nome_spans = ativos_cell.find_all('span')
+            nome = 'N/A'
+            for span in nome_spans:
+                if span.text.strip() != ticker and 'truncate' in span.get('class', []):
+                    nome = span.text.strip()
+                    break
+            
+            # Extract Patrimônio Líquido (Net Equity) - column 1
+            patrimonio_cell = cells[1]
+            patrimonio_div = patrimonio_cell.find('div', class_='money')
+            patrimonio_text = patrimonio_div.text.strip() if patrimonio_div else 'N/A'
+            
+            # Extract Dividend Yield - column 2
+            dy_cell = cells[2]
+            dy_div = dy_cell.find('div', class_='percent')
+            dy_text = dy_div.text.strip() if dy_div else 'N/A'
+            dy = float(dy_text.replace('%', '').replace(' ', '').replace('.', '').replace(',', '.')) if dy_text not in ['-', 'N/A', ''] else 0
 
-            dy = card.find('span', string='DY: ')
-            dy = dy.find_next('span').text.strip() if dy else 'N/A'
-            dy = float(dy.replace('%', '').replace(' ', '').replace('.', '').replace(',', '.')) if dy not in ['-', 'N/A', ''] else 0
+            # Extract P/VP - column 3
+            p_vp_cell = cells[3]
+            p_vp_div = p_vp_cell.find('div', class_='decimal')
+            p_vp_text = p_vp_div.text.strip() if p_vp_div else 'N/A'
+            p_vp = float(p_vp_text.replace('.', '').replace(',', '.')) if p_vp_text not in ['-', 'N/A', ''] else 0
 
-            tipo = card.find('span', string='Tipo: ')
-            tipo = tipo.find_next('span').text.strip() if tipo else 'N/A'
-            match tipo:
+            # Extract Liquidez Diária - column 4
+            liquidez_cell = cells[4]
+            liquidez_div = liquidez_cell.find('div', class_='money')
+            liquidez_text = liquidez_div.text.strip() if liquidez_div else 'N/A'
+            liquidez = liquidez_text.replace('R$ ', '').replace(' ', '')
+            multiplier = 1
+            if liquidez.endswith('M'):
+                multiplier = 1_000_000
+                liquidez = liquidez.replace('M', '')
+            elif liquidez.endswith('K'):
+                multiplier = 1_000
+                liquidez = liquidez.replace('K', '')
+            elif liquidez.endswith('B'):
+                multiplier = 1_000_000_000
+                liquidez = liquidez.replace('B', '')
+            liquidez = float(liquidez.replace(',', '.')) * multiplier if liquidez not in ['-', 'N/A', ''] else 0
+
+            # Extract Variação 12m - column 5
+            variacao_cell = cells[5]
+            variacao_div = variacao_cell.find('div', class_='var')
+            variacao_span = variacao_div.find('span', class_='variation-up') or variacao_div.find('span', class_='variation-down') if variacao_div else None
+            variacao_text = variacao_span.text.strip() if variacao_span else 'N/A'
+            # Remove arrows and color indicators
+            variacao_text = variacao_text.replace('▲', '').replace('▼', '').strip()
+            variacao12m = float(variacao_text.replace('%', '').replace(' ', '').replace('.', '').replace(',', '.')) if variacao_text not in ['-', 'N/A', ''] else 0
+
+            # Extract Tipo (Type) - column 6 (hidden but present)
+            tipo_cell = cells[6] if len(cells) > 6 else None
+            tipo_text = 'N/A'
+            if tipo_cell:
+                tipo_div = tipo_cell.find('div', class_='text')
+                tipo_text = tipo_div.text.strip() if tipo_div else 'N/A'
+            
+            # Map tipo values
+            match tipo_text:
                 case 'Fundo de tijolo':
                     tipo = 'Fundo de Tijolo'
                 case 'Fundo de papel':
@@ -195,19 +259,11 @@ class Investidor10Scraper:
                 case '-':
                     tipo = 'Outro'
                 case _:
-                    pass
+                    tipo = tipo_text
 
-            segmento = card.find('span', string='Segmento: ')
-            segmento = segmento.find_next('span').text.strip() if segmento else 'N/A'
-            match segmento:
-                case 'Logístico / Indústria / Galpões':
-                    segmento = 'Logístico'
-                case 'Shoppings / Varejo':
-                    segmento = 'Shoppings'
-                case 'Títulos e Valores Mobiliários':
-                    segmento = 'Títulos e Val. Mob.'
-                case _:
-                    pass
+            # For segmento, we'll set as 'N/A' since it's not visible in the table
+            # This would need to be obtained from individual FII pages
+            segmento = 'N/A'
 
             basic_data = [ticker, nome, p_vp, dy, tipo, segmento]
 

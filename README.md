@@ -1,8 +1,13 @@
 # FIIs Buscador
 
-### Deploy Local
+### Deploy Local utilizando Linux
 
 #### Utilizando pyenv e venv
+
+Fácil instalação do pyenv, caso ainda não tenha
+~~~sh
+curl -fsSL https://pyenv.run | bash
+~~~
 
 Instalar versão 3.10.12 do python, caso ainda não tenha
 ~~~sh
@@ -23,9 +28,7 @@ pip install -r requirements.txt
 
 Fazer scrapes local
 ~~~sh
-python3 src/scrapes/fundamentus.py
-python3 src/scrapes/investidor10.py
-python3 src/scrapes/fnet.py
+python3 src/scrapes/all_scrapes.py
 ~~~
 
 Inicializar projeto local
