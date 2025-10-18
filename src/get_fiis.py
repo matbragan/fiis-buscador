@@ -32,7 +32,8 @@ def get_data() -> pd.DataFrame:
     '''
     df = join_scrapes()
 
-    df.fillna(0, inplace=True)
+    cols_to_fill = df.columns.difference(['Segmento'])
+    df[cols_to_fill] = df[cols_to_fill].fillna(0)
 
     df['Último Yield'] = (df['Último Rendimento'] / df['Cotação'] * 100).where(df['Cotação'] != 0, 0)
     
