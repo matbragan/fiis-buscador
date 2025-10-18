@@ -1,7 +1,7 @@
 import streamlit as st
 
 from src.get_fiis import get_data
-from src.constants import INVESTIDOR10_BASE_URL, FAVORITE_TICKERS, PERCENT_COLS, MONEY_COLS, FLOAT_COLS, INT_COLS
+from src.constants import INVESTIDOR10_BASE_URL, MY_TICKERS, WANTED_TICKERS, PERCENT_COLS, MONEY_COLS, FLOAT_COLS, INT_COLS
 
 st.set_page_config(page_title='Buscador de FIIs', layout='wide')
 
@@ -82,9 +82,13 @@ if liquidez_min:
 st.sidebar.divider()
 
 
-favorites = st.sidebar.toggle('Favoritos')
-if favorites:
-    df = df[df['Ticker'].isin(FAVORITE_TICKERS)]
+my_tickers = st.sidebar.toggle('Meus FIIs')
+if my_tickers:
+    df = df[df['Ticker'].isin(MY_TICKERS)]
+
+wanted_tickers = st.sidebar.toggle('FIIs Desejados')
+if wanted_tickers:
+    df = df[df['Ticker'].isin(WANTED_TICKERS)]
 
 data_obtained = st.sidebar.toggle('Dados Obtidos')
 if data_obtained:
@@ -115,18 +119,17 @@ def format_sufix_money(value):
     return formatted.replace('.', ',')
 
 formatters = {}
-for col in df.columns:
-    for col in PERCENT_COLS:
-        formatters[col] = lambda x: f'{x:,.2f}%'.replace(',', 'TEMP').replace('.', ',').replace('TEMP', '.')
-    for col in MONEY_COLS:
-        if col in ['Valor de Mercado', 'Liquidez Diária']:
-            formatters[col] = lambda x: format_sufix_money(x)
-        elif not col in ['Valor Patrimonial']:
-            formatters[col] = lambda x: f'R$ {x:,.2f}'.replace(',', 'TEMP').replace('.', ',').replace('TEMP', '.')
-    for col in FLOAT_COLS:
-        formatters[col] = lambda x: f'{x:,.2f}'.replace(',', 'TEMP').replace('.', ',').replace('TEMP', '.')
-    for col in INT_COLS:
-        formatters[col] = lambda x: f'{x:,.0f}'.replace(',', 'TEMP').replace('.', ',').replace('TEMP', '.')
+for col in PERCENT_COLS:
+    formatters[col] = lambda x: f'{x:,.2f}%'.replace(',', 'TEMP').replace('.', ',').replace('TEMP', '.')
+for col in MONEY_COLS:
+    if col in ['Valor de Mercado', 'Liquidez Diária']:
+        formatters[col] = lambda x: format_sufix_money(x)
+    elif not col in ['Valor Patrimonial']:
+        formatters[col] = lambda x: f'R$ {x:,.2f}'.replace(',', 'TEMP').replace('.', ',').replace('TEMP', '.')
+for col in FLOAT_COLS:
+    formatters[col] = lambda x: f'{x:,.2f}'.replace(',', 'TEMP').replace('.', ',').replace('TEMP', '.')
+for col in INT_COLS:
+    formatters[col] = lambda x: f'{x:,.0f}'.replace(',', 'TEMP').replace('.', ',').replace('TEMP', '.')
 
 
 css = '''

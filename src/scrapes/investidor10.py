@@ -98,6 +98,9 @@ class Investidor10Scraper:
             case _:
                 pass
 
+        segmento = soup.find('span', string=re.compile(r'SEGMENTO', re.IGNORECASE))
+        segmento = segmento.find_parent('div', class_='desc').find('div', class_='value').find('span').get_text(strip=True) if segmento else 'N/A'
+
         tipo_gestao = soup.find('span', string=re.compile(r'TIPO DE GESTÃO', re.IGNORECASE))
         tipo_gestao = tipo_gestao.find_parent('div', class_='desc').find('div', class_='value').find('span').get_text(strip=True) if tipo_gestao else 'N/A'
         match tipo_gestao:
@@ -136,7 +139,7 @@ class Investidor10Scraper:
         ult_rendimento = ult_rendimento.replace('R$ ', '').replace(' ', '')
         ult_rendimento = float(ult_rendimento.replace('.', '').replace(',', '.')) if ult_rendimento not in ['-', 'N/A', ''] else 0
 
-        data.append([cotacao, liquidez, variacao12m, cnpj, publico_alvo, tipo_gestao, taxa_adm, vacancia, nro_cotistas, cotas_emitidas, vl_patrimonial, ult_rendimento])
+        data.append([cotacao, liquidez, variacao12m, cnpj, publico_alvo, segmento, tipo_gestao, taxa_adm, vacancia, nro_cotistas, cotas_emitidas, vl_patrimonial, ult_rendimento])
 
         return data[0]
 
@@ -155,8 +158,8 @@ class Investidor10Scraper:
         route = f'?page={page}'
         soup = self.get_soup_request(route=route)
 
-        columns = ['Ticker', 'Nome', 'P/VP', 'Dividend Yield', 'Tipo', 'Segmento', 'Dados Obtidos', 'Cotação', 
-                   'Liquidez Diária', 'Variação 12M', 'CNPJ', 'Público Alvo', 'Tipo de Gestão', 'Taxa de Administração', 
+        columns = ['Ticker', 'Nome', 'P/VP', 'Dividend Yield', 'Tipo', 'Dados Obtidos', 'Cotação', 
+                   'Liquidez Diária', 'Variação 12M', 'CNPJ', 'Público Alvo', 'Segmento', 'Tipo de Gestão', 'Taxa de Administração', 
                    'Vacância', 'Número de Cotistas', 'Cotas Emitidas', 'Valor Patrimonial', 'Último Rendimento']
 
         if soup is None:
@@ -261,11 +264,7 @@ class Investidor10Scraper:
                 case _:
                     tipo = tipo_text
 
-            # For segmento, we'll set as 'N/A' since it's not visible in the table
-            # This would need to be obtained from individual FII pages
-            segmento = 'N/A'
-
-            basic_data = [ticker, nome, p_vp, dy, tipo, segmento]
+            basic_data = [ticker, nome, p_vp, dy, tipo]
 
             plus_data = self.get_fii_data(ticker=ticker)
             get_plus_data = True if len(plus_data) != 0 else False

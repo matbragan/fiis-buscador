@@ -4,12 +4,12 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import streamlit as st
 import pandas as pd
 from src.get_communications import get_data
-from src.constants import FNET_BASE_URL, FAVORITE_TICKERS
+from src.constants import FNET_BASE_URL, MY_TICKERS
 
 st.set_page_config(page_title='Comunicados dos FIIs', layout='wide')
 
 df = get_data()
-df = df[df['Ticker'].isin(FAVORITE_TICKERS)]
+df = df[df['Ticker'].isin(MY_TICKERS)]
 
 ########################################### PERSISTÊNCIA DOS CHECKBOXES
 

@@ -4,6 +4,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')
 import logging
 from datetime import datetime
 import tempfile
+from time import sleep
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -12,7 +13,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import pandas as pd
 
-from src.constants import FNET_BASE_URL, FAVORITE_TICKERS, COMMUNICATIONS_FILE_NAME, INVESTIDOR10_FILE_NAME
+from src.constants import FNET_BASE_URL, MY_TICKERS, COMMUNICATIONS_FILE_NAME, INVESTIDOR10_FILE_NAME
 from src.utils import get_downloads_path, write_csv_file
 
 
@@ -20,36 +21,19 @@ log_format = '%(asctime)s - %(levelname)s - %(message)s'
 logging.basicConfig(format=log_format, level=logging.INFO)
 
 
-def get_cnpj_by_ticker(
-        ticker: str
-) -> str:
-    '''
-    Obtém o CNPJ de um FII pelo seu ticker.
-
-    Args:
-        ticker (str): Ticker do FII.
-
-    Returns:
-        str: CNPJ do FII.
-    '''
-    downloads_path = get_downloads_path()
-    df = pd.read_csv(os.path.join(downloads_path, f'{INVESTIDOR10_FILE_NAME}.csv'))
-    cnpj = df[df['Ticker'] == ticker]['CNPJ'].values[0]
-    cnpj = cnpj.astype(str).replace('.0', '')
-    return cnpj
-
-
 def get_fii_communications(
         ticker: str,
+        cnpj: str,
         base_url: str = FNET_BASE_URL,
         attempt: int = 1,
-        max_attempts: int = 10
+        max_attempts: int = 20
 ) -> pd.DataFrame:
     '''
     Obtém os 10 últimos comunicados de um FII, no site FNET.
 
     Args:
         ticker (str): Ticker do FII.
+        cnpj (str): CNPJ do FII.
         base_url (str): URL base para fazer a requisição.
         attempt (int): Tentativa atual de obtenção.
         max_attempts (int): Número máximo de tentativas.
@@ -65,8 +49,6 @@ def get_fii_communications(
 
     driver = webdriver.Chrome(options=options)
 
-    ticker = ticker.upper()
-    cnpj = get_cnpj_by_ticker(ticker)
     url = base_url + f'?cnpjFundo={cnpj}'
     driver.get(url)
 
@@ -94,6 +76,7 @@ def get_fii_communications(
     if len(df) == 0:
         if attempt < max_attempts:
             logging.info(f'{ticker} - Nenhum comunicado encontrado, tentativa {attempt}/{max_attempts}...')
+            # sleep(2)
             return get_fii_communications(ticker, base_url, attempt=attempt+1, max_attempts=max_attempts)
         else:
             logging.warning(f'{ticker} - Nenhum comunicado encontrado após {max_attempts} tentativas.')
@@ -108,14 +91,14 @@ def get_fii_communications(
 
 
 def get_many_fii_communications(
-        tickers: list,
+        tickers: dict,
         base_url: str = FNET_BASE_URL
 ) -> pd.DataFrame:
     '''
     Obtém os 10 últimos comunicados de vários FII, no site FNET.
 
     Args:
-        tickers (list): Lista de tickers dos FII.
+        tickers (dict): Dicionário de tickers dos FII, onde a chave é o ticker e o valor é o CNPJ.
         base_url (str): URL base para fazer a requisição.
 
     Returns:
@@ -124,8 +107,8 @@ def get_many_fii_communications(
     logging.info('Leitura de comunicados do site FNET iniciando...')
 
     dfs = []
-    for ticker in tickers:
-        dfs.append(get_fii_communications(ticker, base_url))
+    for ticker, cnpj in tickers.items():
+        dfs.append(get_fii_communications(ticker, cnpj, base_url))
     df = pd.concat(dfs)
 
     df['Data Atualização'] = datetime.now()
@@ -136,6 +119,6 @@ def get_many_fii_communications(
 
 
 if __name__ == '__main__':
-    communications = get_many_fii_communications(FAVORITE_TICKERS)
+    communications = get_many_fii_communications(MY_TICKERS)
     
     write_csv_file(data=communications, file_name=COMMUNICATIONS_FILE_NAME)
