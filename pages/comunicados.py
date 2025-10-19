@@ -4,12 +4,12 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import streamlit as st
 import pandas as pd
 from src.get_communications import get_data
-from src.constants import FNET_BASE_URL, MY_TICKERS
+from src.constants import FNET_BASE_URL, MY_TICKERS, WANTED_TICKERS
 
 st.set_page_config(page_title='Comunicados dos FIIs', layout='wide')
 
 df = get_data()
-df = df[df['Ticker'].isin(MY_TICKERS)]
+df = df[df['Ticker'].isin(MY_TICKERS | WANTED_TICKERS)]
 
 ########################################### PERSISTÊNCIA DOS CHECKBOXES
 
@@ -51,6 +51,18 @@ type_list = sorted(df['Tipo'].dropna().unique())
 type = st.sidebar.multiselect('Tipo(s)', options=type_list, default=None)
 if type:
     df = df[df['Tipo'].isin(type)]
+    
+
+st.sidebar.divider()
+
+
+my_tickers = st.sidebar.toggle('Meus FIIs')
+if my_tickers:
+    df = df[df['Ticker'].isin(MY_TICKERS)]
+
+wanted_tickers = st.sidebar.toggle('FIIs Desejados')
+if wanted_tickers:
+    df = df[df['Ticker'].isin(WANTED_TICKERS)]
 
 ########################################### TABELA INTERATIVA
 
