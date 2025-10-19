@@ -1,7 +1,7 @@
 from tzlocal import get_localzone
 import pandas as pd
 
-from src.constants import INVESTIDOR10_FILE_NAME, FUNDAMENTUS_FILE_NAME
+from src.constants import INVESTIDOR10_FILE_NAME, FUNDAMENTUS_FILE_NAME, PERCENT_COLS, MONEY_COLS, FLOAT_COLS, INT_COLS
 
 
 def join_scrapes() -> pd.DataFrame:
@@ -32,17 +32,18 @@ def get_data() -> pd.DataFrame:
     '''
     df = join_scrapes()
 
-    cols_to_fill = df.columns.difference(['Segmento'])
-    df[cols_to_fill] = df[cols_to_fill].fillna(0)
+    cols_to_fill = df.columns.difference(PERCENT_COLS + MONEY_COLS + FLOAT_COLS + INT_COLS)
+    df[cols_to_fill] = df[cols_to_fill].fillna('')
 
     df['Último Yield'] = (df['Último Rendimento'] / df['Cotação'] * 100).where(df['Cotação'] != 0, 0)
     
     df['Cálculo Valor de Mercado'] = df['Cotação'] * df['Cotas Emitidas']
     df['Valor de Mercado'] = df['Cálculo Valor de Mercado'].where(df['Cálculo Valor de Mercado'] != 0, df['Valor de Mercado'])
-    
+
+    df = df[df['Dados Obtidos'] == True] # Only keep FIIs with data obtained in Investidor10 FII page
     df = df[['Ticker', 'Tipo', 'Segmento', 'Cotação', 'P/VP', 'Dividend Yield', 'Liquidez Diária', 'Qtd de imóveis', 
              'Vacância', 'Variação 12M', 'Tipo de Gestão', 'Último Rendimento', 'Último Yield', 'Valor de Mercado', 
-             'Valor Patrimonial', 'Número de Cotistas', 'Público Alvo', 'Taxa de Administração', 'Data Atualização', 'Dados Obtidos']]
+             'Valor Patrimonial', 'Número de Cotistas', 'Público Alvo', 'Taxa de Administração', 'Data Atualização']]
 
     df['dy_rank'] = df['Dividend Yield'].rank(ascending=False)
     df['p_vp_rank'] = df['P/VP'].rank()

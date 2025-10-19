@@ -90,10 +90,6 @@ wanted_tickers = st.sidebar.toggle('FIIs Desejados')
 if wanted_tickers:
     df = df[df['Ticker'].isin(WANTED_TICKERS)]
 
-data_obtained = st.sidebar.toggle('Dados Obtidos')
-if data_obtained:
-    df = df[df['Dados Obtidos'] == True]
-
 
 ########################################### MAIN TABLE
 st.title(f'{df.shape[0]} FIIs')
