@@ -39,6 +39,7 @@ def get_data() -> pd.DataFrame:
     
     df['Cálculo Valor de Mercado'] = df['Cotação'] * df['Cotas Emitidas']
     df['Valor de Mercado'] = df['Cálculo Valor de Mercado'].where(df['Cálculo Valor de Mercado'] != 0, df['Valor de Mercado'])
+    df['Valor de Mercado'] = df['Valor de Mercado'].astype(float)
 
     df = df[df['Dados Obtidos'] == True] # Only keep FIIs with data obtained in Investidor10 FII page
     df = df[['Ticker', 'Tipo', 'Segmento', 'Cotação', 'P/VP', 'Dividend Yield', 'Liquidez Diária', 'Qtd de imóveis', 
