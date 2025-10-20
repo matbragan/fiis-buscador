@@ -145,7 +145,7 @@ with col2:
     st.markdown("### 📈 Total de Cotas")
     st.markdown(f"#### **{total_cotas:,}**".replace(',', 'TEMP').replace('.', ',').replace('TEMP', '.'))
     
-    st.markdown("### 🏢 FIIs com Posição")
+    st.markdown("### 🏢 FIIs na Carteira")
     st.markdown(f"#### **{total_fiis}**")
     
     st.markdown('</div>', unsafe_allow_html=True)
