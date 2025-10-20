@@ -68,107 +68,71 @@ if 'quantities' not in st.session_state:
 
 ########################################### INTERFACE PARA INSERIR QUANTIDADES
 
-# Cria colunas para organizar melhor a interface com divisor
-col1, spacer, col2 = st.columns([2, 0.1, 1])
+# Organiza os FIIs em um grid de 2 colunas para economizar espaço
+fiis_data = [(row['Ticker'], row['Cotação']) for _, row in df.iterrows()]
 
-with col1:
-    st.subheader('Quantidade de Cotas')
+# Cria colunas para o grid dos FIIs
+fii_col1, fii_col2, fii_col3 = st.columns(3)
+
+# Primeiro, cria todos os widgets
+for i, (ticker, cotacao) in enumerate(fiis_data):
+
+    if i % 3 == 0:
+        current_col = fii_col1
+    elif i % 2 == 0:
+        current_col = fii_col3
+    else:
+        current_col = fii_col2
     
-    # Organiza os FIIs em um grid de 2 colunas para economizar espaço
-    fiis_data = [(row['Ticker'], row['Cotação']) for _, row in df.iterrows()]
-    
-    # Cria colunas para o grid dos FIIs
-    fii_col1, fii_col2 = st.columns(2)
-    
-    # Primeiro, cria todos os widgets
-    for i, (ticker, cotacao) in enumerate(fiis_data):
-        # Alterna entre as colunas
-        current_col = fii_col1 if i % 2 == 0 else fii_col2
+    with current_col:
+        # Valor atual salvo ou 0
+        current_qty = st.session_state.quantities.get(ticker, 0)
         
-        with current_col:
-            # Valor atual salvo ou 0
-            current_qty = st.session_state.quantities.get(ticker, 0)
-            
-            # Container para cada FII com estilo mais compacto
-            st.markdown(f'<div class="fii-container">', unsafe_allow_html=True)
-            
-            # Header do FII
-            st.markdown(f"### {ticker}")
-            # st.markdown(f"**Cotação:** R$ {cotacao:.2f}")
-            
-            # Input para quantidade mais compacto
-            qty = st.number_input(
-                "Quantidade",
-                min_value=0,
-                value=int(current_qty),
-                step=1,
-                key=f'qty_{ticker}',
-                label_visibility="collapsed"
-            )
-            
-            # Calcula o valor total
-            valor_total = qty * cotacao
-            st.markdown(f"**💵 Cotação:** R$ {cotacao:.2f}")
-            st.markdown(f"**💰 Valor Total:** R$ {valor_total:,.2f}".replace(',', 'TEMP').replace('.', ',').replace('TEMP', '.'))
-            
-            # st.markdown('</div>', unsafe_allow_html=True)
-    
-    # Agora coleta todos os valores dos widgets
-    edited_quantities = {}
-    for ticker, _ in fiis_data:
-        edited_quantities[ticker] = st.session_state.get(f'qty_{ticker}', 0)
+        # Container para cada FII com estilo mais compacto
+        st.markdown(f'<div class="fii-container">', unsafe_allow_html=True)
+        
+        # Header do FII
+        st.markdown(f"### {ticker}")
+        # st.markdown(f"**Cotação:** R$ {cotacao:.2f}")
+        
+        # Input para quantidade mais compacto
+        qty = st.number_input(
+            "Quantidade",
+            min_value=0,
+            value=int(current_qty),
+            step=1,
+            key=f'qty_{ticker}',
+            label_visibility="collapsed"
+        )
+        
+        # Calcula o valor total
+        valor_total = qty * cotacao
+        st.markdown(f"**💵 Cotação:** R$ {cotacao:.2f}")
+        st.markdown(f"**💰 Valor Total:** R$ {valor_total:,.2f}".replace(',', 'TEMP').replace('.', ',').replace('TEMP', '.'))
+        
+        # st.markdown('</div>', unsafe_allow_html=True)
 
-with spacer:
-    # Divisor vertical entre as colunas
-    st.markdown("""
-    <div style="height: 100%; width: 2px; background-color: rgba(255,255,255,0.2); margin: 0 auto; border-radius: 1px;"></div>
-    """, unsafe_allow_html=True)
+# Agora coleta todos os valores dos widgets
+edited_quantities = {}
+for ticker, _ in fiis_data:
+    edited_quantities[ticker] = st.session_state.get(f'qty_{ticker}', 0)
 
-with col2:
-    st.subheader('Resumo')
-    
-    # Calcula totais
-    total_investido = sum(qty * df[df['Ticker'] == ticker].iloc[0]['Cotação'] 
-                         for ticker, qty in edited_quantities.items() 
-                         if not df[df['Ticker'] == ticker].empty)
-    
-    total_cotas = sum(edited_quantities.values())
-    total_fiis = sum(1 for qty in edited_quantities.values() if qty > 0)
-    
-    # Container para o resumo com estilo
-    st.markdown('<div class="fii-container">', unsafe_allow_html=True)
-    
-    # Métricas em formato mais compacto
-    st.markdown("### 💰 Total Investido")
-    st.markdown(f"#### **R$ {total_investido:,.2f}**".replace(',', 'TEMP').replace('.', ',').replace('TEMP', '.'))
-    
-    st.markdown("### 📈 Total de Cotas")
-    st.markdown(f"#### **{total_cotas:,}**".replace(',', 'TEMP').replace('.', ',').replace('TEMP', '.'))
-    
-    st.markdown("### 🏢 FIIs na Carteira")
-    st.markdown(f"#### **{total_fiis}**")
-    
-    st.markdown('</div>', unsafe_allow_html=True)
-    
-    # Espaçamento
-    st.markdown("<br>", unsafe_allow_html=True)
-    
-    # Botões de ação
-    btn_col1, btn_col2 = st.columns(2)
-    
-    with btn_col1:
-        if st.button('💾 Salvar', type='primary', use_container_width=True):
-            st.session_state.quantities = edited_quantities
-            save_quantities(edited_quantities)
-            st.success('✅ Salvo com sucesso!')
-            st.rerun()
-    
-    with btn_col2:
-        if st.button('🗑️ Limpar', use_container_width=True):
-            st.session_state.quantities = {ticker: 0 for ticker in MY_TICKERS.keys()}
-            save_quantities(st.session_state.quantities)
-            st.success('✅ Limpo com sucesso!')
-            st.rerun()
+# Botões de ação
+btn_col1, btn_col2 = st.columns(2)
+
+with btn_col1:
+    if st.button('💾 Salvar', type='primary', use_container_width=True):
+        st.session_state.quantities = edited_quantities
+        save_quantities(edited_quantities)
+        st.success('✅ Salvo com sucesso!')
+        st.rerun()
+
+with btn_col2:
+    if st.button('🗑️ Limpar', use_container_width=True):
+        st.session_state.quantities = {ticker: 0 for ticker in MY_TICKERS.keys()}
+        save_quantities(st.session_state.quantities)
+        st.success('✅ Limpo com sucesso!')
+        st.rerun()
 
 ########################################### INFORMAÇÕES ADICIONAIS
 
