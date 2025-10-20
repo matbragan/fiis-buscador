@@ -188,14 +188,13 @@ fig_barras = px.bar(
 fig_barras.update_traces(
     hovertemplate='<b>%{y}</b><br>' +
                  'Valor Total: R$ %{x:,.2f}<br>' +
-                 'Segmento: %{customdata[0]}<br>' +
-                 'Quantidade: %{customdata[1]} cotas<br>',
+                 'Quantidade: %{customdata[0]} cotas<br>',
     textposition='inside'
 )
 
 fig_barras.update_layout(
     xaxis_title='Valor Investido (R$)',
-    yaxis_title='FII',
+    yaxis_title='',
     font=dict(size=12),
     yaxis={'categoryorder': 'total ascending'}  # Ordena do maior valor para o menor
 )
