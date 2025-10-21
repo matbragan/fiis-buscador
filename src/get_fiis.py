@@ -19,6 +19,14 @@ def join_scrapes() -> pd.DataFrame:
 
     df = investidor10_df.merge(fundamentus_df, how='left', on='Ticker')
 
+    try:
+        ward_fiis = pd.read_csv('downloads/ward_fiis.csv')
+        ward_fiis['Segmento'] = ward_fiis['Segmento'].str.title()
+        ward_fiis = ward_fiis.rename(columns={'Segmento': 'Segmento2'})
+        df = df.merge(ward_fiis, how='left', on='Ticker')
+    except:
+        pass
+
     return df
 
 
@@ -42,7 +50,7 @@ def get_data() -> pd.DataFrame:
     df['Valor de Mercado'] = df['Valor de Mercado'].astype(float)
 
     df = df[df['Dados Obtidos'] == True] # Only keep FIIs with data obtained in Investidor10 FII page
-    df = df[['Ticker', 'Tipo', 'Segmento', 'Cotação', 'P/VP', 'Dividend Yield', 'Liquidez Diária', 'Qtd de imóveis', 
+    df = df[['Ticker', 'Tipo', 'Segmento', 'Segmento2', 'Cotação', 'P/VP', 'Dividend Yield', 'Liquidez Diária', 'Qtd de imóveis', 
              'Vacância', 'Variação 12M', 'Tipo de Gestão', 'Último Rendimento', 'Último Yield', 'Valor de Mercado', 
              'Valor Patrimonial', 'Número de Cotistas', 'Público Alvo', 'Taxa de Administração', 'Data Atualização']]
 
