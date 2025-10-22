@@ -82,6 +82,17 @@ try:
 
     if fundos:
         df = pd.DataFrame(fundos).drop_duplicates(subset='Ticker')
+        df['Segmento'] = df['Segmento'].str.title()
+        replacements = {
+            'Logístico': 'Logística',
+            'Papel Cri': 'Papel CRI',
+            'Fiagro': 'FIAgro',
+            'Fi-Infra': 'FI-Infra',
+            'Fof': 'FoF',
+            'Shopping': 'Shoppings',
+            'Agências': 'Agências Bancárias',
+        }
+        df['Segmento'] = df['Segmento'].replace(replacements)
         print(f"\n✅ Total de FIIs extraídos: {len(df)}")
         print(df.head())
 

@@ -15,17 +15,21 @@ logging.basicConfig(format=log_format, level=logging.INFO)
 if __name__ == '__main__':
     logging.info('Iniciando scrapes...')
 
+    logging.info('--------------------------------')
     # Investidor10
     FIIsScraper = Investidor10Scraper()
     fiis = FIIsScraper.get_all_fiis()
     write_csv_file(data=fiis, file_name=INVESTIDOR10_FILE_NAME)
 
+    logging.info('--------------------------------')
     # Fundamentus
     fiis = get_fundamentus_data()
     write_csv_file(data=fiis, file_name=FUNDAMENTUS_FILE_NAME)
 
+    logging.info('--------------------------------')
     # FNET
     communications = get_many_fii_communications(MY_TICKERS)
     write_csv_file(data=communications, file_name=COMMUNICATIONS_FILE_NAME)
 
+    logging.info('--------------------------------')
     logging.info('Todos os scrapes concluídos com sucesso!')

@@ -35,10 +35,13 @@ segmentos = st.sidebar.multiselect('Segmento(s)', options=segmentos_list, defaul
 if segmentos:
     df = df[df['Segmento'].isin(segmentos)]
 
-segmentos2_list = sorted(df['Segmento2'].dropna().unique())
-segmentos2 = st.sidebar.multiselect('Segmento(s)2', options=segmentos2_list, default=None)
-if segmentos2:
-    df = df[df['Segmento2'].isin(segmentos2)]
+try:
+    segmentos2_list = sorted(df['Segmento2'].dropna().unique())
+    segmentos2 = st.sidebar.multiselect('Segmento(s)2', options=segmentos2_list, default=None)
+    if segmentos2:
+        df = df[df['Segmento2'].isin(segmentos2)]
+except:
+    pass
 
 
 def numeric_cast(str_value):
