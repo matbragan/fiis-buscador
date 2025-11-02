@@ -4,6 +4,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')
 import logging
 from datetime import datetime
 import tempfile
+from time import sleep
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -26,7 +27,7 @@ def get_fii_communications(
         cnpj: str,
         base_url: str = FNET_BASE_URL,
         attempt: int = 1,
-        max_attempts: int = 12
+        max_attempts: int = 20
 ) -> pd.DataFrame:
     '''
     Obtém os 10 últimos comunicados de um FII, no site FNET.
@@ -82,7 +83,8 @@ def get_fii_communications(
 
     if len(df) == 0:
         if attempt < max_attempts:
-            logging.info(f'{ticker} - Nenhum comunicado encontrado, tentativa {attempt}/{max_attempts}...')
+            logging.error(f'{ticker} - Nenhum comunicado encontrado, tentativa {attempt}/{max_attempts}...')
+            sleep(0.8)
             return get_fii_communications(ticker, cnpj, base_url, attempt=attempt+1, max_attempts=max_attempts)
         else:
             logging.warning(f'{ticker} - Nenhum comunicado encontrado após {max_attempts} tentativas.')
@@ -113,6 +115,7 @@ def get_many_fii_communications(
     logging.info('Leitura de comunicados do site FNET iniciando...')
 
     dfs = []
+    logging.info(f'Obtendo comunicados para {len(tickers)} FIIs...')
     for ticker, cnpj in tickers.items():
         dfs.append(get_fii_communications(ticker, cnpj, base_url))
     df = pd.concat(dfs)

@@ -8,6 +8,7 @@ FNET_BASE_URL = 'https://fnet.bmfbovespa.com.br/fnet/publico/abrirGerenciadorDoc
 INVESTIDOR10_FILE_NAME = 'investidor10_fiis'
 FUNDAMENTUS_FILE_NAME = 'fundamentus_fiis'
 COMMUNICATIONS_FILE_NAME = 'communications'
+WARD_FILE_NAME = 'ward_fiis'
 
 MY_TICKERS = {
     'NEWL11': '32.527.626/0001-47',
