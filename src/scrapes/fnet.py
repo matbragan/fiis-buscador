@@ -50,6 +50,7 @@ def get_fii_communications(
 
     driver = webdriver.Chrome(options=options)
 
+    cnpj = cnpj.replace('/', '').replace('-', '').replace('.', '')
     url = base_url + f'?cnpjFundo={cnpj}'
     driver.get(url)
 
