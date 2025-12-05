@@ -4,12 +4,13 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import streamlit as st
 import pandas as pd
 from src.get_communications import get_data
-from src.constants import FNET_BASE_URL, MY_TICKERS, WANTED_TICKERS
+from src.constants import FNET_BASE_URL
+from src.tickers import get_my_tickers, get_wanted_tickers
 
-st.set_page_config(page_title='Comunicados dos FIIs', layout='wide')
+st.set_page_config(page_title='Comunicados', layout='wide')
 
 df = get_data()
-df = df[df['Ticker'].isin(MY_TICKERS | WANTED_TICKERS)]
+df = df[df['Ticker'].isin(get_my_tickers() | get_wanted_tickers())]
 
 ########################################### PERSISTÊNCIA DOS CHECKBOXES
 
@@ -56,13 +57,13 @@ if type:
 st.sidebar.divider()
 
 
-my_tickers = st.sidebar.toggle('Meus FIIs')
+my_tickers = st.sidebar.toggle('Meus FIIs', value=True)
 if my_tickers:
-    df = df[df['Ticker'].isin(MY_TICKERS)]
+    df = df[df['Ticker'].isin(get_my_tickers())]
 
 wanted_tickers = st.sidebar.toggle('FIIs Desejados')
 if wanted_tickers:
-    df = df[df['Ticker'].isin(WANTED_TICKERS)]
+    df = df[df['Ticker'].isin(get_wanted_tickers())]
 
 ########################################### TABELA INTERATIVA
 
@@ -89,6 +90,12 @@ link_bar = ' | '.join(links)
 # Exibe os links no topo da página
 st.markdown(f"##### Documentos - {link_bar}", unsafe_allow_html=True)
 
+# Salva o estado anterior para detectar mudanças
+if 'previous_read_state' not in st.session_state:
+    st.session_state.previous_read_state = st.session_state.read.copy()
+    
+previous_state = st.session_state.previous_read_state.copy()
+
 # Exibe editor interativo
 edited_df = st.data_editor(
     df[['ID', 'Lido', 'Ticker', 'Categoria', 'Tipo', 'Mês de Referência', 'Data de Referência', 'Data de Entrega', 'Status', 'Versão']],
@@ -107,16 +114,141 @@ for i, row in edited_df.iterrows():
 
 save_checkbox_state(st.session_state.read)
 
+# Detecta se houve mudanças e faz rerun automático
+if previous_state != st.session_state.read:
+    st.session_state.previous_read_state = st.session_state.read.copy()
+    st.rerun()
+
 # Conta quantos comunicados não lidos por Ticker
 unread_count = (
     df[~df['Lido']]
     .groupby('Ticker')
     .size()
+    .sort_index()
 )
 
+# Calcula total de comunicados não lidos
+total_unread = unread_count.sum() if not unread_count.empty else 0
+
+# Seção de comunicados não lidos
+# st.divider()
+
 if not unread_count.empty:
-    st.markdown("### 🔔 Comunicados não lidos por FII")
-    for ticker, count in unread_count.items():
-        st.markdown(f"- **{ticker}**: {count} comunicado(s) não lido(s)")
+    # CSS para ajustar cores no dark mode do Streamlit
+    st.markdown("""
+    <style>
+        .fii-card-text {
+            color: #333;
+        }
+        .fii-card-subtext {
+            color: #666;
+        }
+        /* Detecta dark mode usando seletores do Streamlit */
+        [data-baseweb="base-dark"] ~ * .fii-card-text,
+        [data-baseweb="base-dark"] .fii-card-text,
+        section:has([data-baseweb="base-dark"]) .fii-card-text {
+            color: #e0e0e0 !important;
+        }
+        [data-baseweb="base-dark"] ~ * .fii-card-subtext,
+        [data-baseweb="base-dark"] .fii-card-subtext,
+        section:has([data-baseweb="base-dark"]) .fii-card-subtext {
+            color: #b0b0b0 !important;
+        }
+        /* Fallback para dark mode do sistema */
+        @media (prefers-color-scheme: dark) {
+            .fii-card-text {
+                color: #e0e0e0 !important;
+            }
+            .fii-card-subtext {
+                color: #b0b0b0 !important;
+            }
+        }
+    </style>
+    <script>
+        // Função para ajustar cores baseado no tema
+        function adjustColors() {
+            const appContainer = document.querySelector('[data-testid="stAppViewContainer"]');
+            const bodyBg = window.getComputedStyle(document.body).backgroundColor;
+            const isDark = appContainer && (
+                appContainer.querySelector('[data-baseweb="base-dark"]') ||
+                bodyBg === 'rgb(14, 17, 23)' ||
+                bodyBg === 'rgb(38, 39, 48)' ||
+                bodyBg.includes('rgb(14') ||
+                bodyBg.includes('rgb(38') ||
+                window.matchMedia('(prefers-color-scheme: dark)').matches
+            );
+            
+            if (isDark) {
+                document.querySelectorAll('.fii-card-text').forEach(el => {
+                    el.style.color = '#e0e0e0';
+                });
+                document.querySelectorAll('.fii-card-subtext').forEach(el => {
+                    el.style.color = '#b0b0b0';
+                });
+            }
+        }
+        
+        // Executa quando carrega e após um delay para garantir que o DOM está pronto
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', adjustColors);
+        } else {
+            adjustColors();
+        }
+        
+        // Executa após um pequeno delay para garantir que o Streamlit renderizou
+        setTimeout(adjustColors, 200);
+        
+        // Observa mudanças no DOM
+        const observer = new MutationObserver(function() {
+            setTimeout(adjustColors, 50);
+        });
+        if (document.body) {
+            observer.observe(document.body, { childList: true, subtree: true });
+        }
+    </script>
+    """, unsafe_allow_html=True)
+    
+    st.markdown(f"### 📋 {total_unread} Comunicados não lidos")
+    
+    # Cards em grid (3 colunas)
+    num_cols = 3
+    cols = st.columns(num_cols)
+    
+    # Função para determinar cor baseada na quantidade
+    def get_color(count):
+        if count >= 10:
+            return "#dc3545"  # Vermelho para muitos
+        elif count >= 5:
+            return "#ffc107"  # Amarelo para médio
+        else:
+            return "#28a745"  # Verde para poucos
+    
+    for idx, (ticker, count) in enumerate(unread_count.items()):
+        col_idx = idx % num_cols
+        color = get_color(count)
+        
+        with cols[col_idx]:
+            st.markdown(f"""
+            <div style='padding: 15px; margin-bottom: 15px; background-color: {color}15; 
+                        border-left: 4px solid {color}; border-radius: 8px; 
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);'>
+                <div style='display: flex; justify-content: space-between; align-items: center;'>
+                    <strong class='fii-card-text' style='font-size: 18px;'>{ticker}</strong>
+                    <span style='background-color: {color}; color: white; padding: 5px 12px; 
+                                border-radius: 20px; font-weight: bold; font-size: 16px;'>
+                        {count}
+                    </span>
+                </div>
+                <p class='fii-card-subtext' style='margin: 5px 0 0 0; font-size: 12px;'>
+                    {'comunicado' if count == 1 else 'comunicados'} não {'lido' if count == 1 else 'lidos'}
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
 else:
-    st.markdown("Todos os comunicados foram lidos!")
+    st.markdown("""
+    <div style='text-align: center; padding: 40px; background: linear-gradient(135deg, #28a745 0%, #20c997 100%); 
+                border-radius: 15px; margin: 20px 0; box-shadow: 0 4px 6px rgba(0,0,0,0.1);'>
+        <h2 style='color: white; margin: 0; font-size: 36px;'>✅ Todos os comunicados foram lidos!</h2>
+        <p style='color: white; margin: 10px 0 0 0; font-size: 18px;'>Parabéns! Você está em dia com todos os comunicados.</p>
+    </div>
+    """, unsafe_allow_html=True)

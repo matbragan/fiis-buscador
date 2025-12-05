@@ -5,13 +5,13 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 from src.get_fiis import get_data
-from src.constants import MY_TICKERS
+from src.tickers import get_my_tickers
 
-st.set_page_config(page_title='Meus FIIs - Distribuição', layout='wide')
+st.set_page_config(page_title='Distribuição', layout='wide')
 
 # Carrega os dados dos FIIs
 df = get_data()
-df = df[df['Ticker'].isin(MY_TICKERS)].sort_values('Ticker')
+df = df[df['Ticker'].isin(get_my_tickers())].sort_values('Ticker')
 
 ########################################### CARREGAMENTO DAS QUANTIDADES
 

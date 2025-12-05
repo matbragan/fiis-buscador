@@ -1,9 +1,10 @@
 import streamlit as st
 
 from src.get_fiis import get_data
-from src.constants import INVESTIDOR10_BASE_URL, MY_TICKERS, WANTED_TICKERS, PERCENT_COLS, MONEY_COLS, FLOAT_COLS, INT_COLS
+from src.constants import INVESTIDOR10_BASE_URL, PERCENT_COLS, MONEY_COLS, FLOAT_COLS, INT_COLS
+from src.tickers import get_my_tickers, get_wanted_tickers
 
-st.set_page_config(page_title='Buscador de FIIs', layout='wide')
+st.set_page_config(page_title='Buscador', layout='wide')
 
 df = get_data()
 
@@ -92,11 +93,11 @@ st.sidebar.divider()
 
 my_tickers = st.sidebar.toggle('Meus FIIs')
 if my_tickers:
-    df = df[df['Ticker'].isin(MY_TICKERS)]
+    df = df[df['Ticker'].isin(get_my_tickers())]
 
 wanted_tickers = st.sidebar.toggle('FIIs Desejados')
 if wanted_tickers:
-    df = df[df['Ticker'].isin(WANTED_TICKERS)]
+    df = df[df['Ticker'].isin(get_wanted_tickers())]
 
 
 ########################################### MAIN TABLE
