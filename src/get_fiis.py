@@ -72,7 +72,7 @@ def get_data() -> pd.DataFrame:
     except:
         pass
 
-    df['dy_rank'] = df['Dividend Yield'].rank(ascending=False)
+    df['dy_rank'] = df['Dividend Yield'].rank(ascending=False)*2
     df['p_vp_rank'] = df['P/VP'].rank()
     df['rank'] = df['dy_rank'] + df['p_vp_rank']
     df = df.sort_values(by='rank')
