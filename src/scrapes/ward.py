@@ -83,15 +83,64 @@ def get_ward_fiis() -> pd.DataFrame:
             # Ir para a próxima página, se não for a última
             if page < 35:
                 try:
-                    next_button = wait.until(
-                        EC.element_to_be_clickable((By.XPATH, "//a[@aria-label='Next' and contains(@class,'page-link')]"))
-                    )
-                    driver.execute_script("arguments[0].scrollIntoView(true);", next_button)
-                    time.sleep(0.8)
-                    next_button.click()
+                    # Tentar múltiplos seletores para encontrar o botão "Next"
+                    next_button = None
+                    selectors = [
+                        (By.XPATH, "//a[@aria-label='Next' and contains(@class,'page-link')]"),
+                        (By.XPATH, "//a[contains(@aria-label,'Next')]"),
+                        (By.XPATH, "//a[contains(@class,'page-link') and contains(text(),'»')]"),
+                        (By.XPATH, "//a[contains(@class,'page-link') and @aria-label='Next']"),
+                        (By.CSS_SELECTOR, "a.page-link[aria-label='Next']"),
+                        (By.CSS_SELECTOR, "a[aria-label='Next']"),
+                    ]
+                    
+                    for selector_type, selector_value in selectors:
+                        try:
+                            next_button = wait.until(
+                                EC.presence_of_element_located((selector_type, selector_value))
+                            )
+                            # Verificar se o botão está visível e habilitado
+                            if next_button.is_displayed() and next_button.is_enabled():
+                                # Verificar se não está desabilitado pela classe
+                                classes = next_button.get_attribute('class') or ''
+                                if 'disabled' not in classes.lower():
+                                    break
+                        except (TimeoutException, NoSuchElementException):
+                            continue
+                    
+                    if next_button is None:
+                        raise NoSuchElementException("Botão Next não encontrado com nenhum seletor")
+                    
+                    # Scroll até o botão
+                    driver.execute_script("arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", next_button)
+                    time.sleep(1)
+                    
+                    # Tentar clicar normalmente primeiro
+                    try:
+                        next_button.click()
+                    except ElementClickInterceptedException:
+                        # Se o clique normal falhar, usar JavaScript
+                        logging.info(f'Tentando clicar no botão usando JavaScript na página {page}...')
+                        driver.execute_script("arguments[0].click();", next_button)
+                    
+                    # Aguardar a página carregar
+                    time.sleep(1.5)
                     logging.info(f'Leitura de FIIs da página {page} concluída!')
-                except (TimeoutException, NoSuchElementException, ElementClickInterceptedException):
-                    logging.warning('Botão "»" não encontrado ou não clicável. Encerrando...')
+                    
+                except (TimeoutException, NoSuchElementException) as e:
+                    logging.warning(f'Botão "Next" não encontrado na página {page}. Encerrando... Erro: {e}')
+                    break
+                except ElementClickInterceptedException as e:
+                    logging.warning(f'Botão "Next" interceptado na página {page}. Tentando JavaScript... Erro: {e}')
+                    try:
+                        driver.execute_script("arguments[0].click();", next_button)
+                        time.sleep(1.5)
+                        logging.info(f'Leitura de FIIs da página {page} concluída (via JavaScript)!')
+                    except Exception as e2:
+                        logging.warning(f'Falha ao clicar no botão mesmo com JavaScript. Encerrando... Erro: {e2}')
+                        break
+                except Exception as e:
+                    logging.warning(f'Erro inesperado ao tentar avançar página {page}. Encerrando... Erro: {e}')
                     break
 
         if fundos:
