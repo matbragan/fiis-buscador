@@ -194,6 +194,10 @@ if 'Ticker' in cols and 'Link' in cols:
     cols.insert(ticker_idx + 1, 'Link')
     df = df[cols]
 
+# Calcular altura dinamicamente baseada no número de linhas
+num_rows = len(df)
+calculated_height = min(num_rows * 35 + 38, 750)
+
 df = df.style.format(
     {
         **{col: lambda x : '{:,.2f}%'.format(x) for col in PERCENT_COLS},
@@ -211,5 +215,5 @@ st.dataframe(
     column_config=column_config,
     use_container_width=True,
     hide_index=True,
-    height=750
+    height=calculated_height
 )
