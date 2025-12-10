@@ -43,9 +43,9 @@ def get_data() -> pd.DataFrame:
     df['Valor de Mercado'] = df['Valor de Mercado'].astype(float)
 
     df = df[df['Dados Obtidos'] == True] # Only keep FIIs with data obtained in Investidor10 FII page
-    df = df[['Ticker', 'Tipo', 'Segmento', 'Cotação', 'P/VP', 'Dividend Yield', 'Liquidez Diária', 'Qtd de imóveis', 
-             'Vacância', 'Variação 12M', 'Tipo de Gestão', 'Último Rendimento', 'Último Yield', 'Valor de Mercado', 
-             'Valor Patrimonial', 'Número de Cotistas', 'Público Alvo', 'Taxa de Administração', 'Data Atualização']]
+    df = df[['Ticker', 'Tipo', 'Segmento', 'Cotação', 'P/VP', 'Dividend Yield', 'Último Rendimento', 'Último Yield',
+            'Liquidez Diária', 'Qtd de imóveis', 'Vacância', 'Variação 12M', 'Tipo de Gestão', 'Valor de Mercado', 
+            'Valor Patrimonial', 'Número de Cotistas', 'Público Alvo', 'Taxa de Administração', 'Data Atualização']]
 
     try:
         ward_fiis = pd.read_csv('downloads/ward_fiis.csv')
