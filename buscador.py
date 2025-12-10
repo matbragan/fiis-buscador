@@ -1,7 +1,8 @@
 import streamlit as st
+import pandas as pd
 
 from src.get_fiis import get_data
-from src.constants import INVESTIDOR10_BASE_URL, PERCENT_COLS, MONEY_COLS, FLOAT_COLS, INT_COLS
+from src.constants import INVESTIDOR10_BASE_URL, PERCENT_COLS, MONEY_COLS, BIG_MONEY_COLS, FLOAT_COLS, INT_COLS
 from src.tickers import get_my_tickers, get_wanted_tickers
 
 st.set_page_config(page_title='Buscador', layout='wide')
@@ -103,7 +104,8 @@ if wanted_tickers:
 ########################################### MAIN TABLE
 st.title(f'{df.shape[0]} FIIs')
 
-df['Ticker'] = df['Ticker'].apply(lambda x: f'<a href="{INVESTIDOR10_BASE_URL}{x.lower()}" target="_blank">{x}</a>')
+# Criar coluna Link antes de processar o dataframe
+df['Link'] = df['Ticker'].apply(lambda x: f'{INVESTIDOR10_BASE_URL}{x.lower()}')
 
 df = df.drop(columns=df.filter(regex='(approved$|rank$)').columns)
 df = df.reset_index(drop=True).reset_index().rename(columns={'index': 'Rank'})
@@ -111,63 +113,103 @@ df['Rank'] = df['Rank'] + 1
 
 df = df.drop(columns=['Data Atualização'])
 
-def format_sufix_money(value):
-    if value >= 1_000_000_000:
-        formatted = f"R$ {value / 1_000_000_000:.2f} Bilhões"
-    elif value >= 1_000_000:
-        formatted = f"R$ {value / 1_000_000:.2f} Milhões"
-    elif value >= 1_000:
-        formatted = f"R$ {value / 1_000:.2f} Mil"
-    else:
-        formatted = f"R$ {value:.2f}"
+# Função para converter Valor Patrimonial que vem com texto (ex: "997,23 Milhões")
+def convert_valor_patrimonial(value):
+    """Converte Valor Patrimonial de string com texto para número"""
+    if pd.isna(value) or value == '' or value == 'N/A':
+        return None
+    if isinstance(value, (int, float)):
+        return float(value)
+    
+    try:
+        # Remover espaços e converter para string
+        value_str = str(value).strip()
+        
+        # Verificar se contém "Bilhão" ou "Bilhões"
+        if 'Bilhão' in value_str or 'Bilhões' in value_str:
+            # Remover texto e converter formato brasileiro para número
+            num_str = value_str.replace('Bilhão', '').replace('Bilhões', '').replace('R$', '').strip()
+            num_str = num_str.replace('.', '').replace(',', '.')
+            return float(num_str) * 1_000_000_000
+        
+        # Verificar se contém "Milhão" ou "Milhões"
+        elif 'Milhão' in value_str or 'Milhões' in value_str:
+            # Remover texto e converter formato brasileiro para número
+            num_str = value_str.replace('Milhão', '').replace('Milhões', '').replace('R$', '').strip()
+            num_str = num_str.replace('.', '').replace(',', '.')
+            return float(num_str) * 1_000_000
+        
+        # Verificar se contém "Mil"
+        elif 'Mil' in value_str:
+            # Remover texto e converter formato brasileiro para número
+            num_str = value_str.replace('Mil', '').replace('R$', '').strip()
+            num_str = num_str.replace('.', '').replace(',', '.')
+            return float(num_str) * 1_000
+        
+        # Se não tem texto, tentar converter diretamente (formato brasileiro)
+        else:
+            num_str = str(value_str).replace('R$', '').strip()
+            num_str = num_str.replace('.', '').replace(',', '.')
+            return float(num_str)
+    except (ValueError, AttributeError):
+        return None
 
-    return formatted.replace('.', ',')
+# Processar Valor Patrimonial antes de converter para numérico
+if 'Valor Patrimonial' in df.columns:
+    df['Valor Patrimonial'] = df['Valor Patrimonial'].apply(convert_valor_patrimonial)
 
-formatters = {}
-for col in PERCENT_COLS:
-    formatters[col] = lambda x: f'{x:,.2f}%'.replace(',', 'TEMP').replace('.', ',').replace('TEMP', '.')
-for col in MONEY_COLS:
-    if col in ['Valor de Mercado', 'Liquidez Diária']:
-        formatters[col] = lambda x: format_sufix_money(x)
-    elif not col in ['Valor Patrimonial']:
-        formatters[col] = lambda x: f'R$ {x:,.2f}'.replace(',', 'TEMP').replace('.', ',').replace('TEMP', '.')
-for col in FLOAT_COLS:
-    formatters[col] = lambda x: f'{x:,.2f}'.replace(',', 'TEMP').replace('.', ',').replace('TEMP', '.')
-for col in INT_COLS:
-    formatters[col] = lambda x: f'{x:,.0f}'.replace(',', 'TEMP').replace('.', ',').replace('TEMP', '.')
+# Garantir que colunas numéricas sejam do tipo numérico (não string)
+# Converter valores de string para numérico se necessário
+for col in PERCENT_COLS + MONEY_COLS + BIG_MONEY_COLS + FLOAT_COLS + INT_COLS:
+    if col in df.columns:
+        # Para Valor Patrimonial, já foi processado acima
+        if col != 'Valor Patrimonial':
+            df[col] = pd.to_numeric(df[col], errors='coerce')
 
+# Configurar formatação de colunas para st.dataframe
+column_config = {}
 
-css = '''
-<style>
-    table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-    th {
-        background-color: #222831;
-        color: white;
-        text-align: center !important;
-        padding: 10px;
-        height: 100px;
-        font-size: 16px;
-    }
-    td {
-        text-align: center !important;
-        white-space: nowrap;
-        padding: 8px;
-    }
-    tr:nth-child(even) {
-        background-color: #393E46;
-    }
-    tr:nth-child(odd) {
-        background-color: #222831;
-    }
-    a {
-        color: #00ADB5;
-        text-decoration: none;
-    }
-</style>
-'''
+# Configurar coluna Link como link clicável com emoji
+column_config['Link'] = st.column_config.LinkColumn(
+    'Link',
+    display_text='🔗'
+)
 
-st.markdown(css, unsafe_allow_html=True)
-st.markdown(df.to_html(escape=False, index=False, formatters=formatters), unsafe_allow_html=True)
+column_config['Rank'] = st.column_config.NumberColumn(
+    'Rank',
+    pinned=True
+)
+
+column_config['Ticker'] = st.column_config.TextColumn(
+    'Ticker',
+    pinned=True
+)
+
+# Reordenar colunas para colocar Link após Ticker
+cols = list(df.columns)
+if 'Ticker' in cols and 'Link' in cols:
+    ticker_idx = cols.index('Ticker')
+    link_idx = cols.index('Link')
+    cols.pop(link_idx)
+    cols.insert(ticker_idx + 1, 'Link')
+    df = df[cols]
+
+df = df.style.format(
+    {
+        **{col: lambda x : '{:,.2f}%'.format(x) for col in PERCENT_COLS},
+        **{col: lambda x : 'R$ {:,.2f}'.format(x) for col in MONEY_COLS},
+        **{col: lambda x : 'R$ {:,.0f}'.format(x) for col in BIG_MONEY_COLS},
+        **{col: lambda x : '{:,.2f}'.format(x) for col in FLOAT_COLS},
+        **{col: lambda x : '{:,.0f}'.format(x) for col in INT_COLS},
+    },
+    thousands='.',
+    decimal=',',
+)
+
+st.dataframe(
+    df,
+    column_config=column_config,
+    use_container_width=True,
+    hide_index=True,
+    height=750
+)

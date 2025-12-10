@@ -14,6 +14,7 @@ QUANTITY_FILE = 'my_fiis_quantities.json'
 WANTED_FIIS_FILE = 'wanted_fiis.json'
 
 PERCENT_COLS = ['Dividend Yield', 'Vacância', 'Variação 12M', 'Último Yield']
-MONEY_COLS = ['Cotação', 'Liquidez Diária', 'Valor de Mercado', 'Valor Patrimonial', 'Último Rendimento']
+MONEY_COLS = ['Cotação', 'Último Rendimento']
+BIG_MONEY_COLS = ['Liquidez Diária', 'Valor de Mercado', 'Valor Patrimonial']
 FLOAT_COLS = ['P/VP']
 INT_COLS = ['Rank', 'Qtd de imóveis', 'Número de Cotistas']

@@ -2,7 +2,7 @@ from tzlocal import get_localzone
 import pandas as pd
 import numpy as np
 
-from src.constants import INVESTIDOR10_FILE_NAME, FUNDAMENTUS_FILE_NAME, PERCENT_COLS, MONEY_COLS, FLOAT_COLS, INT_COLS
+from src.constants import INVESTIDOR10_FILE_NAME, FUNDAMENTUS_FILE_NAME, PERCENT_COLS, MONEY_COLS, BIG_MONEY_COLS, FLOAT_COLS, INT_COLS
 
 
 def join_scrapes() -> pd.DataFrame:
@@ -33,7 +33,7 @@ def get_data() -> pd.DataFrame:
     '''
     df = join_scrapes()
 
-    cols_to_fill = df.columns.difference(PERCENT_COLS + MONEY_COLS + FLOAT_COLS + INT_COLS)
+    cols_to_fill = df.columns.difference(PERCENT_COLS + MONEY_COLS + BIG_MONEY_COLS + FLOAT_COLS + INT_COLS)
     df[cols_to_fill] = df[cols_to_fill].fillna('')
 
     df['Último Yield'] = (df['Último Rendimento'] / df['Cotação'] * 100).where(df['Cotação'] != 0, 0)
@@ -56,11 +56,14 @@ def get_data() -> pd.DataFrame:
         condition = df['Segmento'].isin(['Outros', 'Híbrido'])
         df['Segmento'] = np.where(condition, df['Segmento2'], df['Segmento'])
         replacements = {
-            'Logística': 'Logístico / Indústria / Galpões',
-            'Industrial': 'Logístico / Indústria / Galpões',
-            'Shoppings': 'Shoppings / Varejo',
+            'Logístico / Indústria / Galpões': 'Logística',
+            'Industrial': 'Logística',
+            'Shoppings / Varejo': 'Shoppings',
             'Varejo': 'Renda Urbana',
-            'Papel CRI': 'Títulos e Valores Mobiliários',
+            'Títulos e Valores Mobiliários': 'Títulos e Val. Mob.',
+            'Papel CRI': 'Títulos e Val. Mob.',
+            'Fundo de Infraestrutura (FI-Infra)': 'FI-Infra',
+            'Fundo de Investimentos em Participações (FIP)': 'FIP',
             'Outro': 'Outros',
             'Híbrido': 'Outros'
         }
