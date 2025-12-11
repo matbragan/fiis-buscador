@@ -69,6 +69,32 @@ def get_data() -> pd.DataFrame:
         }
         df['Segmento'] = df['Segmento'].replace(replacements)
         df = df.drop(columns=['Segmento2'])
+
+        type_segment_dict = {
+            'Agrícola': 'Fundo de Tijolo',
+            'Agências bancárias': 'Fundo de Tijolo',
+            'Cemitério': 'Fundo de Tijolo',
+            'Desenvolvimento': 'Fundo de Desenvolvimento',
+            'Educacional': 'Fundo de Tijolo',
+            'FI-Infra': 'Outro',
+            'FIP': 'Outro',
+            'Fiagros': 'Outro',
+            'Fundo de Fundos': 'Fundo de Fundos',
+            'Hospitalar': 'Fundo de Tijolo',
+            'Hotéis': 'Fundo de Tijolo',
+            'Lajes Corporativas': 'Fundo de Tijolo',
+            'Logística': 'Fundo de Tijolo',
+            'Renda Urbana': 'Fundo de Tijolo',
+            'Residencial': 'Fundo de Tijolo',
+            'Shoppings': 'Fundo de Tijolo',
+        }
+        
+        # Substituir Tipo baseado no Segmento usando o dicionário
+        df['Tipo'] = df.apply(
+            lambda row: type_segment_dict.get(row['Segmento'], row['Tipo']),
+            axis=1
+        )
+        
     except:
         pass
 

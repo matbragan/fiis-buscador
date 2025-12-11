@@ -118,7 +118,7 @@ if available_tickers:
     
     with add_col2:
         st.markdown('<br>', unsafe_allow_html=True)  # Espaçamento
-        if st.button('➕ Adicionar FII', type='primary', use_container_width=True):
+        if st.button('➕ Adicionar FII', type='primary', width="stretch"):
             if selected_ticker:
                 # Adiciona o FII ao arquivo de quantidades com quantidade 0
                 st.session_state.quantities[selected_ticker] = 0
@@ -170,7 +170,7 @@ for i, (ticker, cotacao) in enumerate(fiis_data):
             st.markdown(f"### {ticker}")
         with header_col2:
             # Botão de remover disponível para todos os FIIs
-            if st.button('🗑️', key=f'remove_{ticker}', help='Remover FII', use_container_width=True):
+            if st.button('🗑️', key=f'remove_{ticker}', help='Remover FII', width="stretch"):
                 # Remove o FII do arquivo de quantidades
                 if ticker in st.session_state.quantities:
                     del st.session_state.quantities[ticker]
@@ -242,7 +242,7 @@ if available_tickers_wanted:
     
     with wanted_add_col2:
         st.markdown('<br>', unsafe_allow_html=True)  # Espaçamento
-        if st.button('➕ Adicionar FII Desejado', type='primary', use_container_width=True, key='add_wanted_fii'):
+        if st.button('➕ Adicionar FII Desejado', type='primary', width="stretch", key='add_wanted_fii'):
             if selected_ticker_wanted:
                 # Adiciona o FII aos desejados
                 st.session_state.wanted_fiis[selected_ticker_wanted] = ''
@@ -287,7 +287,7 @@ if st.session_state.wanted_fiis:
                 with wanted_header_col1:
                     st.markdown(f"### {ticker}")
                 with wanted_header_col2:
-                    if st.button('🗑️', key=f'remove_wanted_{ticker}', help='Remover FII desejado', use_container_width=True):
+                    if st.button('🗑️', key=f'remove_wanted_{ticker}', help='Remover FII desejado', width="stretch"):
                         if ticker in st.session_state.wanted_fiis:
                             del st.session_state.wanted_fiis[ticker]
                             save_wanted_fiis(st.session_state.wanted_fiis)

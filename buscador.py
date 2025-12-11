@@ -213,7 +213,7 @@ df = df.style.format(
 st.dataframe(
     df,
     column_config=column_config,
-    use_container_width=True,
+    width="stretch",
     hide_index=True,
     height=calculated_height
 )

@@ -137,7 +137,7 @@ if segmento_data:
         margin=dict(l=50, r=50, t=50, b=50)
     )
     
-    st.plotly_chart(fig_pizza, use_container_width=True)
+    st.plotly_chart(fig_pizza, width="stretch")
 
 ########################################### GRÁFICO DE BARRAS POR FII
 
@@ -199,7 +199,7 @@ fig_barras.update_layout(
     yaxis={'categoryorder': 'total ascending'}  # Ordena do maior valor para o menor
 )
 
-st.plotly_chart(fig_barras, use_container_width=True)
+st.plotly_chart(fig_barras, width="stretch")
 
 ########################################### INFORMAÇÕES ADICIONAIS
 
