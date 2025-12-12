@@ -79,8 +79,8 @@ def get_fii_communications(
         driver.quit()
 
     columns = [
-        'Nome do Fundo', 'Categoria', 'Tipo', 'Espécie',
-        'Data de Referência', 'Data de Entrega',
+        'Nome do Fundo', 'Fundo/Classe', 'Categoria', 'Tipo', 
+        'Espécie', 'Data de Referência', 'Data de Entrega',
         'Status', 'Versão', 'Modalidade de Envio', 'Ações'
     ]
 
