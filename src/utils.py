@@ -23,15 +23,29 @@ def ensure_downloads_folder() -> None:
         logging.info(f'Pasta "downloads" criada em: {downloads_path}')
 
 
-def write_csv_file(data: pd.DataFrame, file_name: str) -> None:
+def write_csv_file(data: pd.DataFrame, file_name: str, mode: str = 'w') -> None:
     ''' 
     Escreve um arquivo CSV com os dados fornecidos, escrita feita na pasta downloads.
 
     Args:
         data (pd.DataFrame): DataFrame contendo os dados.
         file_name (str): Nome do arquivo CSV.
+        mode (str): Modo de escrita - 'w' para overwrite (padrão) ou 'a' para append.
     '''
     ensure_downloads_folder()
     downloads_path = get_downloads_path()
-    data.to_csv(f'{downloads_path}/{file_name}.csv', index=False)
-    logging.info(f'Arquivo {file_name}.csv escrito com sucesso!')
+    file_path = f'{downloads_path}/{file_name}.csv'
+    
+    if mode == 'a' and os.path.exists(file_path):
+        # Modo append: lê o arquivo existente e concatena com os novos dados
+        existing_data = pd.read_csv(file_path)
+        # Remove duplicatas baseado em todas as colunas (exceto 'Data Atualização' se existir)
+        combined_data = pd.concat([existing_data, data], ignore_index=True)
+        # Remove duplicatas completas mantendo a última ocorrência
+        combined_data = combined_data.drop_duplicates(keep='last')
+        combined_data.to_csv(file_path, index=False)
+        logging.info(f'Arquivo {file_name}.csv atualizado (append) com sucesso!')
+    else:
+        # Modo overwrite: escreve o arquivo normalmente
+        data.to_csv(file_path, index=False)
+        logging.info(f'Arquivo {file_name}.csv escrito com sucesso!')

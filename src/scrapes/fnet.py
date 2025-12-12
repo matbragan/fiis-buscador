@@ -1,6 +1,7 @@
 import os, sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
+import argparse
 import logging
 from datetime import datetime
 import tempfile
@@ -155,6 +156,47 @@ def get_many_fii_communications(
 
 
 if __name__ == '__main__':
-    communications = get_many_fii_communications(get_tickers_with_cnpj())
+    parser = argparse.ArgumentParser(
+        description='Obtém comunicados de FIIs do site FNET'
+    )
+    parser.add_argument(
+        'tickers',
+        nargs='*',
+        help='Lista de tickers para buscar comunicados (opcional). Se não informado, busca todos os tickers cadastrados.'
+    )
     
-    write_csv_file(data=communications, file_name=COMMUNICATIONS_FILE_NAME)
+    args = parser.parse_args()
+    
+    all_tickers = get_tickers_with_cnpj()
+    
+    if args.tickers:
+        # Filtra apenas os tickers passados como argumento
+        filtered_tickers = {
+            ticker: cnpj 
+            for ticker, cnpj in all_tickers.items() 
+            if ticker.upper() in [t.upper() for t in args.tickers]
+        }
+        
+        # Verifica se algum ticker não foi encontrado
+        requested_tickers = [t.upper() for t in args.tickers]
+        found_tickers = [t.upper() for t in filtered_tickers.keys()]
+        missing_tickers = [t for t in requested_tickers if t not in found_tickers]
+        
+        if missing_tickers:
+            logging.warning(f'Tickers não encontrados: {", ".join(missing_tickers)}')
+        
+        if not filtered_tickers:
+            logging.error('Nenhum ticker válido foi encontrado!')
+            sys.exit(1)
+        
+        logging.info(f'Buscando comunicados para {len(filtered_tickers)} ticker(s): {", ".join(filtered_tickers.keys())}')
+        tickers_to_process = filtered_tickers
+        write_mode = 'a'  # Modo append quando tickers são passados como argumento
+    else:
+        logging.info(f'Buscando comunicados para todos os {len(all_tickers)} ticker(s) cadastrados')
+        tickers_to_process = all_tickers
+        write_mode = 'w'  # Modo overwrite quando nenhum argumento é passado
+    
+    communications = get_many_fii_communications(tickers_to_process)
+    
+    write_csv_file(data=communications, file_name=COMMUNICATIONS_FILE_NAME, mode=write_mode)

@@ -175,6 +175,13 @@ class Investidor10Scraper:
         # Find all table rows (skip header row)
         rows = table.find('tbody').find_all('tr') if table.find('tbody') else []
 
+        # Helper function to find cell by data-name attribute
+        def find_cell_by_data_name(cells, data_name):
+            for cell in cells:
+                if cell.get('data-name') == data_name:
+                    return cell
+            return None
+
         data = []
         
         for row in rows:
@@ -197,27 +204,61 @@ class Investidor10Scraper:
                     nome = span.text.strip()
                     break
             
-            # Extract Patrimônio Líquido (Net Equity) - column 1
-            patrimonio_cell = cells[1]
-            patrimonio_div = patrimonio_cell.find('div', class_='money')
-            patrimonio_text = patrimonio_div.text.strip() if patrimonio_div else 'N/A'
+            # Extract Patrimônio Líquido (Net Equity) using data-name
+            patrimonio_cell = find_cell_by_data_name(cells, 'net_worth')
+            patrimonio_text = 'N/A'
+            if patrimonio_cell:
+                patrimonio_div = patrimonio_cell.find('div', class_='money')
+                patrimonio_text = patrimonio_div.text.strip() if patrimonio_div else 'N/A'
             
-            # Extract Dividend Yield - column 2
-            dy_cell = cells[2]
-            dy_div = dy_cell.find('div', class_='percent')
-            dy_text = dy_div.text.strip() if dy_div else 'N/A'
-            dy = float(dy_text.replace('%', '').replace(' ', '').replace('.', '').replace(',', '.')) if dy_text not in ['-', 'N/A', ''] else 0
+            # Extract Dividend Yield using data-name
+            dy_cell = find_cell_by_data_name(cells, 'dividend_yield_last_12_months')
+            dy_text = 'N/A'
+            if dy_cell:
+                dy_div = dy_cell.find('div', class_='percent')
+                dy_text = dy_div.text.strip() if dy_div else 'N/A'
+            # Clean and convert: remove %, spaces, and convert Brazilian format to float
+            if dy_text not in ['-', 'N/A', '']:
+                dy_text_clean = dy_text.replace('%', '').replace(' ', '').strip()
+                # Remove dots (thousands separator) and replace comma with dot (decimal separator)
+                dy_text_clean = dy_text_clean.replace('.', '').replace(',', '.')
+                try:
+                    dy = float(dy_text_clean)
+                except ValueError:
+                    dy = 0
+            else:
+                dy = 0
 
-            # Extract P/VP - column 3
-            p_vp_cell = cells[3]
-            p_vp_div = p_vp_cell.find('div', class_='decimal')
-            p_vp_text = p_vp_div.text.strip() if p_vp_div else 'N/A'
-            p_vp = float(p_vp_text.replace('.', '').replace(',', '.')) if p_vp_text not in ['-', 'N/A', ''] else 0
+            # Extract P/VP using data-name
+            p_vp_cell = find_cell_by_data_name(cells, 'p_vp')
+            p_vp_text = 'N/A'
+            if p_vp_cell:
+                p_vp_div = p_vp_cell.find('div', class_='decimal')
+                p_vp_text = p_vp_div.text.strip() if p_vp_div else 'N/A'
+            # Clean and convert: remove spaces and convert Brazilian format to float
+            if p_vp_text not in ['-', 'N/A', '']:
+                p_vp_text_clean = p_vp_text.replace(' ', '').strip()
+                # Remove dots (thousands separator) and replace comma with dot (decimal separator)
+                p_vp_text_clean = p_vp_text_clean.replace('.', '').replace(',', '.')
+                try:
+                    p_vp = float(p_vp_text_clean)
+                except ValueError:
+                    p_vp = 0
+            else:
+                p_vp = 0
 
-            # Extract Liquidez Diária - column 4
-            liquidez_cell = cells[4]
-            liquidez_div = liquidez_cell.find('div', class_='money')
-            liquidez_text = liquidez_div.text.strip() if liquidez_div else 'N/A'
+            # Extract Liquidez Diária using data-name (pode estar oculta)
+            liquidez_cell = find_cell_by_data_name(cells, 'daily_liquidity')
+            liquidez_text = 'N/A'
+            if liquidez_cell:
+                liquidez_div = liquidez_cell.find('div', class_='money')
+                liquidez_text = liquidez_div.text.strip() if liquidez_div else 'N/A'
+            else:
+                # Fallback: tenta encontrar por índice se não encontrar por data-name
+                if len(cells) > 4:
+                    liquidez_div = cells[4].find('div', class_='money')
+                    liquidez_text = liquidez_div.text.strip() if liquidez_div else 'N/A'
+            
             liquidez = liquidez_text.replace('R$ ', '').replace(' ', '')
             multiplier = 1
             if liquidez.endswith('M'):
@@ -231,17 +272,19 @@ class Investidor10Scraper:
                 liquidez = liquidez.replace('B', '')
             liquidez = float(liquidez.replace(',', '.')) * multiplier if liquidez not in ['-', 'N/A', ''] else 0
 
-            # Extract Variação 12m - column 5
-            variacao_cell = cells[5]
-            variacao_div = variacao_cell.find('div', class_='var')
-            variacao_span = variacao_div.find('span', class_='variation-up') or variacao_div.find('span', class_='variation-down') if variacao_div else None
-            variacao_text = variacao_span.text.strip() if variacao_span else 'N/A'
-            # Remove arrows and color indicators
-            variacao_text = variacao_text.replace('▲', '').replace('▼', '').strip()
+            # Extract Variação 12m using data-name
+            variacao_cell = find_cell_by_data_name(cells, 'variation_12_months')
+            variacao_text = 'N/A'
+            if variacao_cell:
+                variacao_div = variacao_cell.find('div', class_='var')
+                variacao_span = variacao_div.find('span', class_='variation-up') or variacao_div.find('span', class_='variation-down') if variacao_div else None
+                variacao_text = variacao_span.text.strip() if variacao_span else 'N/A'
+                # Remove arrows and color indicators
+                variacao_text = variacao_text.replace('▲', '').replace('▼', '').strip()
             variacao12m = float(variacao_text.replace('%', '').replace(' ', '').replace('.', '').replace(',', '.')) if variacao_text not in ['-', 'N/A', ''] else 0
 
-            # Extract Tipo (Type) - column 6 (hidden but present)
-            tipo_cell = cells[6] if len(cells) > 6 else None
+            # Extract Tipo (Type) using data-name
+            tipo_cell = find_cell_by_data_name(cells, 'fii_type')
             tipo_text = 'N/A'
             if tipo_cell:
                 tipo_div = tipo_cell.find('div', class_='text')

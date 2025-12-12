@@ -104,6 +104,10 @@ if wanted_tickers:
 ########################################### MAIN TABLE
 st.title(f'{df.shape[0]} FIIs')
 
+# Criar coluna com estrela para FIIs que o usuário possui
+my_tickers_set = get_my_tickers()
+df['⭐'] = df['Ticker'].apply(lambda x: '⭐' if x in my_tickers_set else '')
+
 # Criar coluna Link antes de processar o dataframe
 df['Link'] = df['Ticker'].apply(lambda x: f'{INVESTIDOR10_BASE_URL}{x.lower()}')
 
@@ -185,13 +189,29 @@ column_config['Ticker'] = st.column_config.TextColumn(
     pinned=True
 )
 
-# Reordenar colunas para colocar Link após Ticker
+column_config['⭐'] = st.column_config.TextColumn(
+    '⭐'
+)
+
+# Reordenar colunas para colocar estrela e Link após Ticker
 cols = list(df.columns)
-if 'Ticker' in cols and 'Link' in cols:
+if 'Ticker' in cols:
     ticker_idx = cols.index('Ticker')
-    link_idx = cols.index('Link')
-    cols.pop(link_idx)
-    cols.insert(ticker_idx + 1, 'Link')
+    
+    # Remover estrela e Link da posição atual
+    if '⭐' in cols:
+        cols.remove('⭐')
+    if 'Link' in cols:
+        cols.remove('Link')
+    
+    # Inserir estrela e Link após Ticker
+    insert_pos = ticker_idx + 1
+    if '⭐' in df.columns:
+        cols.insert(insert_pos, '⭐')
+        insert_pos += 1
+    if 'Link' in df.columns:
+        cols.insert(insert_pos, 'Link')
+    
     df = df[cols]
 
 # Calcular altura dinamicamente baseada no número de linhas
