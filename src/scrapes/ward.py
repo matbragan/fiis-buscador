@@ -80,6 +80,10 @@ def get_ward_fiis() -> pd.DataFrame:
                         fundos.append({'Ticker': ticker, 'Segmento': segmento})
                 i += 1
 
+            # Log progress apenas a cada 5 páginas ou na última página
+            if page % 5 == 0:
+                logging.info(f'Processando página {page}/35... ({len(fundos)} FIIs encontrados até agora)')
+
             # Ir para a próxima página, se não for a última
             if page < 35:
                 try:
@@ -119,13 +123,11 @@ def get_ward_fiis() -> pd.DataFrame:
                     try:
                         next_button.click()
                     except ElementClickInterceptedException:
-                        # Se o clique normal falhar, usar JavaScript
-                        logging.info(f'Tentando clicar no botão usando JavaScript na página {page}...')
+                        # Se o clique normal falhar, usar JavaScript (sem log, é comportamento esperado)
                         driver.execute_script("arguments[0].click();", next_button)
                     
                     # Aguardar a página carregar
                     time.sleep(1.5)
-                    logging.info(f'Leitura de FIIs da página {page} concluída!')
                     
                 except (TimeoutException, NoSuchElementException) as e:
                     logging.warning(f'Botão "Next" não encontrado na página {page}. Encerrando... Erro: {e}')
@@ -135,7 +137,6 @@ def get_ward_fiis() -> pd.DataFrame:
                     try:
                         driver.execute_script("arguments[0].click();", next_button)
                         time.sleep(1.5)
-                        logging.info(f'Leitura de FIIs da página {page} concluída (via JavaScript)!')
                     except Exception as e2:
                         logging.warning(f'Falha ao clicar no botão mesmo com JavaScript. Encerrando... Erro: {e2}')
                         break
