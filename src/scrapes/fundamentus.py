@@ -1,5 +1,6 @@
 import sys, os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
 import time
 import logging
@@ -11,14 +12,12 @@ from src.constants import FUNDAMENTUS_URL, HEADERS, FUNDAMENTUS_FILE_NAME
 from src.utils import write_csv_file
 
 
-log_format = '%(asctime)s - %(levelname)s - %(message)s'
+log_format = "%(asctime)s - %(levelname)s - %(message)s"
 logging.basicConfig(format=log_format, level=logging.INFO)
 
 
-def get_fundamentus_data(
-        max_attempts: int = 20
-) -> pd.DataFrame:
-    ''' 
+def get_fundamentus_data(max_attempts: int = 20) -> pd.DataFrame:
+    """
     Obtém os dados de FIIs do Fundamentus.
 
     Args:
@@ -26,33 +25,37 @@ def get_fundamentus_data(
 
     Returns:
         pd.DataFrame: Um DataFrame contendo os dados dos FIIs do Fundamentus.
-    '''
-    logging.info('Leitura de dados do site Fundamentus iniciando...')
+    """
+    logging.info("Leitura de dados do site Fundamentus iniciando...")
 
     attempt = 1
     while True:
         response = requests.get(FUNDAMENTUS_URL, headers=HEADERS)
-        
+
         if response.status_code == 200:
-            df = pd.read_html(response.content, decimal=',', thousands='.')[0]
-            logging.info(f'Tentativa {attempt}: Dados obtidos com sucesso!')
+            df = pd.read_html(response.content, decimal=",", thousands=".")[0]
+            logging.info(f"Tentativa {attempt}: Dados obtidos com sucesso!")
             break
         elif response.status_code == 403:
             if attempt == max_attempts:
-                logging.warning(f'Tentativas excedidas {attempt}: Erro 403, a requisição foi bloqueada pelo site.')
+                logging.warning(
+                    f"Tentativas excedidas {attempt}: Erro 403, a requisição foi bloqueada pelo site."
+                )
                 return
-            logging.error(f'Tentativa {attempt}: Erro 403, a requisição foi bloqueada pelo site. Tentando novamente...')
+            logging.error(
+                f"Tentativa {attempt}: Erro 403, a requisição foi bloqueada pelo site. Tentando novamente..."
+            )
             time.sleep(2)
             attempt += 1
         else:
-            logging.error(f'Erro na requisição: {response.status_code}')
+            logging.error(f"Erro na requisição: {response.status_code}")
             return
-        
-    logging.info('Leitura de dados do site Fundamentus concluida!')
+
+    logging.info("Leitura de dados do site Fundamentus concluida!")
     return df
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     fiis = get_fundamentus_data()
-    
+
     write_csv_file(data=fiis, file_name=FUNDAMENTUS_FILE_NAME)

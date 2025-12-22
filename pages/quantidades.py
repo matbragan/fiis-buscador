@@ -1,15 +1,22 @@
 import sys, os, json
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import streamlit as st
 import pandas as pd
 from src.get_fiis import get_data
-from src.tickers import get_my_tickers, get_wanted_tickers, get_my_tickers_dict, get_wanted_tickers_dict
+from src.tickers import (
+    get_my_tickers,
+    get_wanted_tickers,
+    get_my_tickers_dict,
+    get_wanted_tickers_dict,
+)
 
-st.set_page_config(page_title='Quantidades', layout='wide')
+st.set_page_config(page_title="Quantidades", layout="wide")
 
 # CSS customizado para melhorar a aparência
-st.markdown("""
+st.markdown(
+    """
 <style>
     
     .fii-container:hover {
@@ -40,109 +47,111 @@ st.markdown("""
         font-weight: 600;
     }
 </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 # Carrega os dados dos FIIs
 df_all = get_data()
 
 ########################################### PERSISTÊNCIA DOS DADOS DE QUANTIDADE
 
-QUANTITY_FILE = 'my_fiis_quantities.json'
-WANTED_FIIS_FILE = 'wanted_fiis.json'
+QUANTITY_FILE = "my_fiis_quantities.json"
+WANTED_FIIS_FILE = "wanted_fiis.json"
+
 
 def load_quantities():
     """Carrega as quantidades salvas dos FIIs"""
     if os.path.exists(QUANTITY_FILE):
-        with open(QUANTITY_FILE, 'r') as f:
+        with open(QUANTITY_FILE, "r") as f:
             return json.load(f)
     return {}
 
+
 def save_quantities(quantities_dict):
     """Salva as quantidades dos FIIs"""
-    with open(QUANTITY_FILE, 'w') as f:
+    with open(QUANTITY_FILE, "w") as f:
         json.dump(quantities_dict, f)
+
 
 def load_wanted_fiis():
     """Carrega os FIIs desejados salvos"""
     if os.path.exists(WANTED_FIIS_FILE):
-        with open(WANTED_FIIS_FILE, 'r') as f:
+        with open(WANTED_FIIS_FILE, "r") as f:
             return json.load(f)
     return {}
 
+
 def save_wanted_fiis(wanted_fiis_dict):
     """Salva os FIIs desejados"""
-    with open(WANTED_FIIS_FILE, 'w') as f:
+    with open(WANTED_FIIS_FILE, "w") as f:
         json.dump(wanted_fiis_dict, f)
 
+
 # Inicializa o estado se não existir
-if 'quantities' not in st.session_state:
+if "quantities" not in st.session_state:
     st.session_state.quantities = load_quantities()
-    
+
     # Não precisa mais inicializar com MY_TICKERS, pois agora tudo vem do arquivo
     save_quantities(st.session_state.quantities)
 
 # Inicializa FIIs desejados
-if 'wanted_fiis' not in st.session_state:
+if "wanted_fiis" not in st.session_state:
     st.session_state.wanted_fiis = load_wanted_fiis()
     if st.session_state.wanted_fiis:
         save_wanted_fiis(st.session_state.wanted_fiis)
 
 # Salva o estado anterior para detectar mudanças
-if 'previous_quantities' not in st.session_state:
+if "previous_quantities" not in st.session_state:
     st.session_state.previous_quantities = st.session_state.quantities.copy()
 
 # Flag para controlar reruns automáticos
-if 'auto_save_flag' not in st.session_state:
+if "auto_save_flag" not in st.session_state:
     st.session_state.auto_save_flag = False
 
 ########################################### SEÇÃO PARA ADICIONAR NOVOS FIIs
 
-st.header('🏢 Meus FIIs')
+st.header("🏢 Meus FIIs")
 
 # Busca todos os FIIs disponíveis que não estão cadastrados (não estão no arquivo de quantidades)
-all_tickers = sorted(df_all['Ticker'].unique())
-available_tickers = [
-    ticker for ticker in all_tickers 
-    if ticker not in st.session_state.quantities
-]
+all_tickers = sorted(df_all["Ticker"].unique())
+available_tickers = [ticker for ticker in all_tickers if ticker not in st.session_state.quantities]
 
 if available_tickers:
     add_col1, add_col2 = st.columns([3, 1])
-    
+
     with add_col1:
         selected_ticker = st.selectbox(
-            'Selecione um FII para adicionar:',
-            options=available_tickers,
-            key='new_fii_select'
+            "Selecione um FII para adicionar:", options=available_tickers, key="new_fii_select"
         )
-    
+
     with add_col2:
-        st.markdown('<br>', unsafe_allow_html=True)  # Espaçamento
-        if st.button('➕ Adicionar FII', type='primary', width="stretch"):
+        st.markdown("<br>", unsafe_allow_html=True)  # Espaçamento
+        if st.button("➕ Adicionar FII", type="primary", width="stretch"):
             if selected_ticker:
                 # Adiciona o FII ao arquivo de quantidades com quantidade 0
                 st.session_state.quantities[selected_ticker] = 0
                 save_quantities(st.session_state.quantities)
                 st.session_state.previous_quantities = st.session_state.quantities.copy()
-                
-                st.success(f'✅ {selected_ticker} adicionado com sucesso!')
+
+                st.success(f"✅ {selected_ticker} adicionado com sucesso!")
                 st.rerun()
 else:
-    st.info('Todos os FIIs disponíveis já foram adicionados.')
+    st.info("Todos os FIIs disponíveis já foram adicionados.")
 
 ########################################### INTERFACE PARA INSERIR QUANTIDADES
 
-st.markdown('<br>', unsafe_allow_html=True)
-st.markdown('### 📋 Meus FIIs Cadastrados')
+st.markdown("<br>", unsafe_allow_html=True)
+st.markdown("### 📋 Meus FIIs Cadastrados")
 
 # Usa os FIIs que estão no arquivo de quantidades (todos os FIIs cadastrados)
 all_my_fiis_tickers = set(st.session_state.quantities.keys())
 
 # Filtra o dataframe para incluir todos os FIIs cadastrados
-df = df_all[df_all['Ticker'].isin(all_my_fiis_tickers)].sort_values('Ticker')
+df = df_all[df_all["Ticker"].isin(all_my_fiis_tickers)].sort_values("Ticker")
 
 # Organiza os FIIs em um grid de 2 colunas para economizar espaço
-fiis_data = [(row['Ticker'], row['Cotação']) for _, row in df.iterrows()]
+fiis_data = [(row["Ticker"], row["Cotação"]) for _, row in df.iterrows()]
 
 # Cria colunas para o grid dos FIIs
 fii_col1, fii_col2, fii_col3 = st.columns(3)
@@ -156,50 +165,54 @@ for i, (ticker, cotacao) in enumerate(fiis_data):
         current_col = fii_col3
     else:
         current_col = fii_col2
-    
+
     with current_col:
         # Valor atual salvo ou 0
         current_qty = st.session_state.quantities.get(ticker, 0)
-        
+
         # Container para cada FII com estilo mais compacto
         st.markdown(f'<div class="fii-container">', unsafe_allow_html=True)
-        
+
         # Header do FII com botão de remover (todos os FIIs podem ser removidos)
         header_col1, header_col2 = st.columns([4, 1])
         with header_col1:
             st.markdown(f"### {ticker}")
         with header_col2:
             # Botão de remover disponível para todos os FIIs
-            if st.button('🗑️', key=f'remove_{ticker}', help='Remover FII', width="stretch"):
+            if st.button("🗑️", key=f"remove_{ticker}", help="Remover FII", width="stretch"):
                 # Remove o FII do arquivo de quantidades
                 if ticker in st.session_state.quantities:
                     del st.session_state.quantities[ticker]
                     save_quantities(st.session_state.quantities)
                     st.session_state.previous_quantities = st.session_state.quantities.copy()
-                st.success(f'✅ {ticker} removido!')
+                st.success(f"✅ {ticker} removido!")
                 st.rerun()
-        
+
         # Input para quantidade mais compacto
         qty = st.number_input(
             "Quantidade",
             min_value=0,
             value=int(current_qty),
             step=1,
-            key=f'qty_{ticker}',
-            label_visibility="collapsed"
+            key=f"qty_{ticker}",
+            label_visibility="collapsed",
         )
-        
+
         # Calcula o valor total
         valor_total = qty * cotacao
         st.markdown(f"**💵 Cotação:** R$ {cotacao:.2f}")
-        st.markdown(f"**💰 Valor Total:** R$ {valor_total:,.2f}".replace(',', 'TEMP').replace('.', ',').replace('TEMP', '.'))
-        
+        st.markdown(
+            f"**💰 Valor Total:** R$ {valor_total:,.2f}".replace(",", "TEMP")
+            .replace(".", ",")
+            .replace("TEMP", ".")
+        )
+
         # st.markdown('</div>', unsafe_allow_html=True)
 
 # Coleta todos os valores dos widgets
 edited_quantities = {}
 for ticker, _ in fiis_data:
-    edited_quantities[ticker] = st.session_state.get(f'qty_{ticker}', 0)
+    edited_quantities[ticker] = st.session_state.get(f"qty_{ticker}", 0)
 
 # Detecta mudanças e salva automaticamente (apenas se não estiver em modo auto-save)
 if not st.session_state.auto_save_flag:
@@ -220,57 +233,62 @@ else:
 
 ########################################### SEÇÃO PARA FIIs DESEJADOS
 
-st.markdown('---')
-st.header('⭐ FIIs Desejados')
+st.markdown("---")
+st.header("⭐ FIIs Desejados")
 
 # Busca todos os FIIs disponíveis que não estão cadastrados como desejados
-all_tickers_wanted = sorted(df_all['Ticker'].unique())
+all_tickers_wanted = sorted(df_all["Ticker"].unique())
 available_tickers_wanted = [
-    ticker for ticker in all_tickers_wanted 
+    ticker
+    for ticker in all_tickers_wanted
     if ticker not in st.session_state.wanted_fiis and ticker not in st.session_state.quantities
 ]
 
 if available_tickers_wanted:
     wanted_add_col1, wanted_add_col2 = st.columns([3, 1])
-    
+
     with wanted_add_col1:
         selected_ticker_wanted = st.selectbox(
-            'Selecione um FII para adicionar aos desejados:',
+            "Selecione um FII para adicionar aos desejados:",
             options=available_tickers_wanted,
-            key='new_wanted_fii_select'
+            key="new_wanted_fii_select",
         )
-    
+
     with wanted_add_col2:
-        st.markdown('<br>', unsafe_allow_html=True)  # Espaçamento
-        if st.button('➕ Adicionar FII Desejado', type='primary', width="stretch", key='add_wanted_fii'):
+        st.markdown("<br>", unsafe_allow_html=True)  # Espaçamento
+        if st.button(
+            "➕ Adicionar FII Desejado", type="primary", width="stretch", key="add_wanted_fii"
+        ):
             if selected_ticker_wanted:
                 # Adiciona o FII aos desejados
-                st.session_state.wanted_fiis[selected_ticker_wanted] = ''
+                st.session_state.wanted_fiis[selected_ticker_wanted] = ""
                 save_wanted_fiis(st.session_state.wanted_fiis)
-                
-                st.success(f'✅ {selected_ticker_wanted} adicionado aos desejados!')
+
+                st.success(f"✅ {selected_ticker_wanted} adicionado aos desejados!")
                 st.rerun()
 else:
-    st.info('Todos os FIIs disponíveis já foram adicionados ou você já possui.')
+    st.info("Todos os FIIs disponíveis já foram adicionados ou você já possui.")
 
 # Mostra os FIIs desejados cadastrados
 if st.session_state.wanted_fiis:
-    st.markdown('<br>', unsafe_allow_html=True)
-    st.markdown('### 📋 FIIs Desejados Cadastrados')
-    
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("### 📋 FIIs Desejados Cadastrados")
+
     # Usa os FIIs que estão no arquivo de desejados
     wanted_fiis_tickers = set(st.session_state.wanted_fiis.keys())
-    
+
     # Filtra o dataframe para incluir todos os FIIs desejados
-    df_wanted = df_all[df_all['Ticker'].isin(wanted_fiis_tickers)].sort_values('Ticker')
-    
+    df_wanted = df_all[df_all["Ticker"].isin(wanted_fiis_tickers)].sort_values("Ticker")
+
     if not df_wanted.empty:
         # Organiza os FIIs desejados em um grid
-        wanted_fiis_data = [(row['Ticker'], row['Cotação'], row.get('P/VP', 0)) for _, row in df_wanted.iterrows()]
-        
+        wanted_fiis_data = [
+            (row["Ticker"], row["Cotação"], row.get("P/VP", 0)) for _, row in df_wanted.iterrows()
+        ]
+
         # Cria colunas para o grid dos FIIs desejados
         wanted_col1, wanted_col2, wanted_col3 = st.columns(3)
-        
+
         for i, (ticker, cotacao, pvp) in enumerate(wanted_fiis_data):
             if i % 3 == 0:
                 current_wanted_col = wanted_col1
@@ -278,33 +296,38 @@ if st.session_state.wanted_fiis:
                 current_wanted_col = wanted_col3
             else:
                 current_wanted_col = wanted_col2
-            
+
             with current_wanted_col:
                 st.markdown(f'<div class="fii-container">', unsafe_allow_html=True)
-                
+
                 # Header do FII com botão de remover
                 wanted_header_col1, wanted_header_col2 = st.columns([4, 1])
                 with wanted_header_col1:
                     st.markdown(f"### {ticker}")
                 with wanted_header_col2:
-                    if st.button('🗑️', key=f'remove_wanted_{ticker}', help='Remover FII desejado', width="stretch"):
+                    if st.button(
+                        "🗑️",
+                        key=f"remove_wanted_{ticker}",
+                        help="Remover FII desejado",
+                        width="stretch",
+                    ):
                         if ticker in st.session_state.wanted_fiis:
                             del st.session_state.wanted_fiis[ticker]
                             save_wanted_fiis(st.session_state.wanted_fiis)
-                        st.success(f'✅ {ticker} removido dos desejados!')
+                        st.success(f"✅ {ticker} removido dos desejados!")
                         st.rerun()
-                
+
                 # Mostra informações do FII
                 st.markdown(f"**💵 Cotação:** R$ {cotacao:.2f}")
                 if pd.notna(pvp) and pvp != 0:
                     st.markdown(f"**📊 P/VP:** {pvp:.2f}")
-                st.markdown('</div>', unsafe_allow_html=True)
+                st.markdown("</div>", unsafe_allow_html=True)
 
 ########################################### INFORMAÇÕES ADICIONAIS
 
 if not df.empty:
-    atualizado = df['Data Atualização'].min().strftime('%d/%m/%Y %Hh%Mmin')
-    st.sidebar.text(f'Atualizado {atualizado}')
+    atualizado = df["Data Atualização"].min().strftime("%d/%m/%Y %Hh%Mmin")
+    st.sidebar.text(f"Atualizado {atualizado}")
 else:
-    atualizado = df_all['Data Atualização'].min().strftime('%d/%m/%Y %Hh%Mmin')
-    st.sidebar.text(f'Atualizado {atualizado}')
+    atualizado = df_all["Data Atualização"].min().strftime("%d/%m/%Y %Hh%Mmin")
+    st.sidebar.text(f"Atualizado {atualizado}")
