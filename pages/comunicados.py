@@ -74,6 +74,17 @@ df['ID'] = df['ID'].str.replace('/', '').str.replace(':', '').str.replace(' ', '
 # Adiciona coluna de seleção com base no session_state
 df['Lido'] = df['ID'].map(lambda x: st.session_state.read.get(x, False))
 
+# Formata a coluna Status para adicionar emoji quando for Inativo ou Cancelado
+df['Status_Formatado'] = df['Status'].apply(
+    lambda x: f"❌ {x}" if str(x).strip() in ['Inativo', 'Cancelado'] else str(x)
+)
+
+# Formata a coluna Categoria para adicionar emoji quando o status for Inativo ou Cancelado
+df['Categoria_Formatada'] = df.apply(
+    lambda row: f"❌ {row['Categoria']}" if str(row['Status']).strip() in ['Inativo', 'Cancelado'] else str(row['Categoria']),
+    axis=1
+)
+
 st.title(f"{df['Ticker'].nunique()} FIIs")
 
 unique_tickers = df[['Ticker', 'CNPJ']].drop_duplicates()
@@ -98,10 +109,12 @@ previous_state = st.session_state.previous_read_state.copy()
 
 # Exibe editor interativo
 edited_df = st.data_editor(
-    df[['ID', 'Lido', 'Ticker', 'Categoria', 'Tipo', 'Mês de Referência', 'Data de Referência', 'Data de Entrega', 'Status', 'Versão']],
+    df[['ID', 'Lido', 'Ticker', 'Categoria_Formatada', 'Tipo', 'Mês de Referência', 'Data de Entrega', 'Status_Formatado', 'Versão']],
     column_config={
         'Lido': st.column_config.CheckboxColumn(label='Lido'),
         'ID': None,
+        'Categoria_Formatada': st.column_config.TextColumn(label='Categoria'),
+        'Status_Formatado': st.column_config.TextColumn(label='Status'),
     },
     hide_index=True,
     width="stretch",
@@ -126,6 +139,12 @@ unread_count = (
     .size()
     .sort_index()
 )
+
+# Conta todos os FIIs (incluindo os que têm todos os comunicados lidos)
+all_tickers_count = df.groupby('Ticker').size().sort_index()
+
+# Preenche com 0 os FIIs que não têm comunicados não lidos
+unread_count = unread_count.reindex(all_tickers_count.index, fill_value=0)
 
 # Calcula total de comunicados não lidos
 total_unread = unread_count.sum() if not unread_count.empty else 0
@@ -216,18 +235,25 @@ if not unread_count.empty:
     
     # Função para determinar cor baseada na quantidade
     def get_color(count):
-        if count >= 10:
+        if count == 0:
+            return "#28a745"  # Verde para todos lidos
+        elif count >= 8:
             return "#dc3545"  # Vermelho para muitos
-        elif count >= 5:
+        elif count >= 4:
             return "#ffc107"  # Amarelo para médio
         else:
-            return "#28a745"  # Verde para poucos
+            return "#17a2b8"  # Azul para poucos
     
     for idx, (ticker, count) in enumerate(unread_count.items()):
         col_idx = idx % num_cols
         color = get_color(count)
         
         with cols[col_idx]:
+            if count == 0:
+                message = "Todos comunicados lidos"
+            else:
+                message = f"{'comunicado' if count == 1 else 'comunicados'} não {'lido' if count == 1 else 'lidos'}"
+            
             st.markdown(f"""
             <div style='padding: 15px; margin-bottom: 15px; background-color: {color}15; 
                         border-left: 4px solid {color}; border-radius: 8px; 
@@ -240,15 +266,8 @@ if not unread_count.empty:
                     </span>
                 </div>
                 <p class='fii-card-subtext' style='margin: 5px 0 0 0; font-size: 12px;'>
-                    {'comunicado' if count == 1 else 'comunicados'} não {'lido' if count == 1 else 'lidos'}
+                    {message}
                 </p>
             </div>
             """, unsafe_allow_html=True)
-else:
-    st.markdown("""
-    <div style='text-align: center; padding: 40px; background: linear-gradient(135deg, #28a745 0%, #20c997 100%); 
-                border-radius: 15px; margin: 20px 0; box-shadow: 0 4px 6px rgba(0,0,0,0.1);'>
-        <h2 style='color: white; margin: 0; font-size: 36px;'>✅ Todos os comunicados foram lidos!</h2>
-        <p style='color: white; margin: 10px 0 0 0; font-size: 18px;'>Parabéns! Você está em dia com todos os comunicados.</p>
-    </div>
-    """, unsafe_allow_html=True)
+    

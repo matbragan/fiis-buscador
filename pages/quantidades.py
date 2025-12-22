@@ -308,9 +308,3 @@ if not df.empty:
 else:
     atualizado = df_all['Data Atualização'].min().strftime('%d/%m/%Y %Hh%Mmin')
     st.sidebar.text(f'Atualizado {atualizado}')
-
-st.sidebar.header('ℹ️ Informações')
-st.sidebar.info(
-    "Esta página permite gerenciar as quantidades dos seus FIIs e também os FIIs desejados. "
-    "Após inserir as quantidades, você pode visualizar a distribuição na página 'Meus FIIs - Distribuição'."
-)

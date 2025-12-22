@@ -44,7 +44,7 @@ if not active_fiis:
 
 ########################################### RESUMO GERAL
 
-col1, col2, col3, col4 = st.columns(4)
+col1, col2, col3, col4, col5 = st.columns(5)
 
 # Calcula métricas gerais
 total_investido = sum(qty * df[df['Ticker'] == ticker].iloc[0]['Cotação'] 
@@ -56,12 +56,16 @@ total_fiis = len(active_fiis)
 
 # Calcula DY médio ponderado
 dy_ponderado = 0
+ultimo_yield_ponderado = 0
 for ticker, qty in active_fiis.items():
     fii_data = df[df['Ticker'] == ticker]
     if not fii_data.empty:
         valor_fii = qty * fii_data.iloc[0]['Cotação']
+        peso = valor_fii / total_investido
         dy_fii = fii_data.iloc[0]['Dividend Yield']
-        dy_ponderado += (valor_fii / total_investido) * dy_fii
+        ultimo_yield_fii = fii_data.iloc[0]['Último Yield']
+        dy_ponderado += peso * dy_fii
+        ultimo_yield_ponderado += peso * ultimo_yield_fii
 
 with col1:
     st.metric("💰 Total Investido", f"R$ {total_investido:,.2f}".replace(',', 'TEMP').replace('.', ',').replace('TEMP', '.'))
@@ -71,6 +75,8 @@ with col3:
     st.metric("🏢 FIIs na Carteira", f"{total_fiis}")
 with col4:
     st.metric("🪃 DY Médio Ponderado", f"{dy_ponderado:.2f}%".replace('.', ','))
+with col5:
+    st.metric("📊 Último Yield Ponderado", f"{ultimo_yield_ponderado:.2f}%".replace('.', ','))
 
 ########################################### GRÁFICO DE DISTRIBUIÇÃO POR SEGMENTO
 
@@ -205,9 +211,3 @@ st.plotly_chart(fig_barras, width="stretch")
 
 atualizado = df['Data Atualização'].min().strftime('%d/%m/%Y %Hh%Mmin')
 st.sidebar.text(f'Atualizado {atualizado}')
-
-st.sidebar.header('ℹ️ Informações')
-st.sidebar.info(
-    "Esta página mostra a distribuição e análise do seu patrimônio em FIIs. "
-    "Para atualizar as quantidades, acesse a página 'Meus FIIs - Quantidades'."
-)
