@@ -18,4 +18,3 @@ exclude = '''
 profile = "black"
 line_length = 100
 skip_glob = ["*.ipynb", "downloads/*", "__pycache__/*"]
-

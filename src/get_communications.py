@@ -1,7 +1,8 @@
 import re
-from tzlocal import get_localzone
+
 import pandas as pd
 from pandas.tseries.offsets import MonthEnd
+from tzlocal import get_localzone
 
 from src.constants import COMMUNICATIONS_FILE_NAME
 

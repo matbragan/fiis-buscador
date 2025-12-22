@@ -1,11 +1,14 @@
-import sys, os, json
+import json
+import os
+import sys
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-import streamlit as st
 import pandas as pd
-from src.get_communications import get_data
+import streamlit as st
+
 from src.constants import FNET_BASE_URL
+from src.get_communications import get_data
 from src.tickers import get_my_tickers, get_wanted_tickers
 
 st.set_page_config(page_title="Comunicados", layout="wide")

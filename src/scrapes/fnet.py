@@ -1,25 +1,25 @@
-import os, sys
+import os
+import sys
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
 import argparse
 import logging
-from datetime import datetime
 import tempfile
+from datetime import datetime
 from time import sleep
 
+import pandas as pd
 from selenium import webdriver
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException
-import pandas as pd
+from selenium.webdriver.support.ui import WebDriverWait
 
-from src.constants import FNET_BASE_URL, COMMUNICATIONS_FILE_NAME
+from src.constants import COMMUNICATIONS_FILE_NAME, FNET_BASE_URL
 from src.tickers import get_tickers_with_cnpj
 from src.utils import write_csv_file
-
 
 log_format = "%(asctime)s - %(levelname)s - %(message)s"
 logging.basicConfig(format=log_format, level=logging.INFO)

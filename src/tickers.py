@@ -1,8 +1,9 @@
-import os
 import json
+import os
+
 import pandas as pd
 
-from src.constants import QUANTITY_FILE, WANTED_FIIS_FILE, INVESTIDOR10_FILE_NAME
+from src.constants import INVESTIDOR10_FILE_NAME, QUANTITY_FILE, WANTED_FIIS_FILE
 
 
 def _get_file_path(filename):

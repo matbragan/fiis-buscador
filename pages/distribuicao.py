@@ -1,10 +1,13 @@
-import sys, os, json
+import json
+import os
+import sys
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-import streamlit as st
 import pandas as pd
 import plotly.express as px
+import streamlit as st
+
 from src.get_fiis import get_data
 from src.tickers import get_my_tickers
 

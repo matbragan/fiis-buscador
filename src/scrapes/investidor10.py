@@ -1,18 +1,18 @@
-import sys, os
+import os
+import sys
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
-import re
 import logging
+import re
 from datetime import datetime
 
-import requests
 import pandas as pd
+import requests
 from bs4 import BeautifulSoup
 
-from src.constants import INVESTIDOR10_BASE_URL, HEADERS, INVESTIDOR10_FILE_NAME
+from src.constants import HEADERS, INVESTIDOR10_BASE_URL, INVESTIDOR10_FILE_NAME
 from src.utils import write_csv_file
-
 
 log_format = "%(asctime)s - %(levelname)s - %(message)s"
 logging.basicConfig(format=log_format, level=logging.INFO)

@@ -1,15 +1,15 @@
-import streamlit as st
 import pandas as pd
+import streamlit as st
 
-from src.get_fiis import get_data
 from src.constants import (
-    INVESTIDOR10_BASE_URL,
-    PERCENT_COLS,
-    MONEY_COLS,
     BIG_MONEY_COLS,
     FLOAT_COLS,
     INT_COLS,
+    INVESTIDOR10_BASE_URL,
+    MONEY_COLS,
+    PERCENT_COLS,
 )
+from src.get_fiis import get_data
 from src.tickers import get_my_tickers, get_wanted_tickers
 
 st.set_page_config(page_title="Buscador", layout="wide")
