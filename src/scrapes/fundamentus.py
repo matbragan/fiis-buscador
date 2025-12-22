@@ -1,8 +1,6 @@
 import os
 import sys
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
-
 import logging
 import time
 
@@ -11,6 +9,8 @@ import requests
 
 from src.constants import FUNDAMENTUS_FILE_NAME, FUNDAMENTUS_URL, HEADERS
 from src.utils import write_csv_file
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
 log_format = "%(asctime)s - %(levelname)s - %(message)s"
 logging.basicConfig(format=log_format, level=logging.INFO)

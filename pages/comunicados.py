@@ -2,21 +2,24 @@ import json
 import os
 import sys
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
-import pandas as pd
 import streamlit as st
 
 from src.constants import FNET_BASE_URL
 from src.get_communications import get_data
 from src.tickers import get_my_tickers, get_wanted_tickers
 
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 st.set_page_config(page_title="Comunicados", layout="wide")
 
 df = get_data()
 df = df[df["Ticker"].isin(get_my_tickers() | get_wanted_tickers())]
 
-########################################### PERSISTÊNCIA DOS CHECKBOXES
+"""
+------------------------------------------
+PERSISTÊNCIA DOS CHECKBOXES
+------------------------------------------
+"""
 
 PERSISTENCE_FILE = "fnet_read.json"
 
@@ -39,7 +42,11 @@ def save_checkbox_state(state_dict):
 if "read" not in st.session_state:
     st.session_state.read = load_checkbox_state()
 
-########################################### SIDEBAR FILTERS
+"""
+------------------------------------------
+SIDEBAR FILTERS
+------------------------------------------
+"""
 atualizado = df["Data Atualização"].min().strftime("%d/%m/%Y %Hh%Mmin")
 st.sidebar.text(f"Atualizado {atualizado}")
 
@@ -72,7 +79,11 @@ wanted_tickers = st.sidebar.toggle("FIIs Desejados")
 if wanted_tickers:
     df = df[df["Ticker"].isin(get_wanted_tickers())]
 
-########################################### TABELA INTERATIVA
+"""
+------------------------------------------
+TABELA INTERATIVA
+------------------------------------------
+"""
 
 # Cria um ID único por linha
 df["ID"] = df["Ticker"] + "_" + df["Data de Entrega"].astype(str) + "_" + df["Versão"].astype(str)
@@ -215,8 +226,8 @@ if not unread_count.empty:
                 bodyBg.includes('rgb(38') ||
                 window.matchMedia('(prefers-color-scheme: dark)').matches
             );
-            
-            if (isDark) {
+
+            if (isDark):
                 document.querySelectorAll('.fii-card-text').forEach(el => {
                     el.style.color = '#e0e0e0';
                 });
@@ -225,17 +236,17 @@ if not unread_count.empty:
                 });
             }
         }
-        
+
         // Executa quando carrega e após um delay para garantir que o DOM está pronto
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', adjustColors);
         } else {
             adjustColors();
         }
-        
+
         // Executa após um pequeno delay para garantir que o Streamlit renderizou
         setTimeout(adjustColors, 200);
-        
+
         // Observa mudanças no DOM
         const observer = new MutationObserver(function() {
             setTimeout(adjustColors, 50);
@@ -277,12 +288,12 @@ if not unread_count.empty:
 
             st.markdown(
                 f"""
-            <div style='padding: 15px; margin-bottom: 15px; background-color: {color}15; 
-                        border-left: 4px solid {color}; border-radius: 8px; 
+            <div style='padding: 15px; margin-bottom: 15px; background-color: {color}15;
+                        border-left: 4px solid {color}; border-radius: 8px;
                         box-shadow: 0 2px 4px rgba(0,0,0,0.1);'>
                 <div style='display: flex; justify-content: space-between; align-items: center;'>
                     <strong class='fii-card-text' style='font-size: 18px;'>{ticker}</strong>
-                    <span style='background-color: {color}; color: white; padding: 5px 12px; 
+                    <span style='background-color: {color}; color: white; padding: 5px 12px;
                                 border-radius: 20px; font-weight: bold; font-size: 16px;'>
                         {count}
                     </span>

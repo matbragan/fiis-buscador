@@ -1,8 +1,6 @@
 import os
 import sys
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
-
 import logging
 import re
 import time
@@ -21,6 +19,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 from src.constants import WARD_FILE_NAME
 from src.utils import write_csv_file
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
 log_format = "%(asctime)s - %(levelname)s - %(message)s"
 logging.basicConfig(format=log_format, level=logging.INFO)

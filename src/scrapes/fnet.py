@@ -1,8 +1,6 @@
 import os
 import sys
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
-
 import argparse
 import logging
 import tempfile
@@ -20,6 +18,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from src.constants import COMMUNICATIONS_FILE_NAME, FNET_BASE_URL
 from src.tickers import get_tickers_with_cnpj
 from src.utils import write_csv_file
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
 log_format = "%(asctime)s - %(levelname)s - %(message)s"
 logging.basicConfig(format=log_format, level=logging.INFO)

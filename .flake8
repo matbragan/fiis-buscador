@@ -1,8 +1,6 @@
 [flake8]
-# Maximum line length
 max-line-length = 100
 
-# Exclude directories
 exclude = 
     .git,
     __pycache__,
@@ -13,18 +11,11 @@ exclude =
     *.pyc,
     .ipynb_checkpoints
 
-# Ignore specific errors
-# E203: whitespace before ':' (conflicts with black)
-# E501: line too long (handled by black)
-# W503: line break before binary operator (conflicts with black)
 ignore = E203, E501, W503
 
-# Maximum complexity
 max-complexity = 10
 
-# Per-file ignores
 per-file-ignores =
     __init__.py:F401
-    # Allow unused imports in test files
     test_*.py:F401
 

@@ -1,8 +1,6 @@
 import os
 import sys
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
-
 import logging
 import re
 from datetime import datetime
@@ -13,6 +11,8 @@ from bs4 import BeautifulSoup
 
 from src.constants import HEADERS, INVESTIDOR10_BASE_URL, INVESTIDOR10_FILE_NAME
 from src.utils import write_csv_file
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
 log_format = "%(asctime)s - %(levelname)s - %(message)s"
 logging.basicConfig(format=log_format, level=logging.INFO)
@@ -335,13 +335,6 @@ class Investidor10Scraper:
                     nome = span.text.strip()
                     break
 
-            # Extract Patrimônio Líquido (Net Equity) using data-name
-            patrimonio_cell = find_cell_by_data_name(cells, "net_worth")
-            patrimonio_text = "N/A"
-            if patrimonio_cell:
-                patrimonio_div = patrimonio_cell.find("div", class_="money")
-                patrimonio_text = patrimonio_div.text.strip() if patrimonio_div else "N/A"
-
             # Extract Dividend Yield using data-name
             dy_cell = find_cell_by_data_name(cells, "dividend_yield_last_12_months")
             dy_text = "N/A"
@@ -404,31 +397,6 @@ class Investidor10Scraper:
             liquidez = (
                 float(liquidez.replace(",", ".")) * multiplier
                 if liquidez not in ["-", "N/A", ""]
-                else 0
-            )
-
-            # Extract Variação 12m using data-name
-            variacao_cell = find_cell_by_data_name(cells, "variation_12_months")
-            variacao_text = "N/A"
-            if variacao_cell:
-                variacao_div = variacao_cell.find("div", class_="var")
-                variacao_span = (
-                    variacao_div.find("span", class_="variation-up")
-                    or variacao_div.find("span", class_="variation-down")
-                    if variacao_div
-                    else None
-                )
-                variacao_text = variacao_span.text.strip() if variacao_span else "N/A"
-                # Remove arrows and color indicators
-                variacao_text = variacao_text.replace("▲", "").replace("▼", "").strip()
-            variacao12m = (
-                float(
-                    variacao_text.replace("%", "")
-                    .replace(" ", "")
-                    .replace(".", "")
-                    .replace(",", ".")
-                )
-                if variacao_text not in ["-", "N/A", ""]
                 else 0
             )
 

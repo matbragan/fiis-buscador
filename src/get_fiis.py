@@ -56,9 +56,7 @@ def get_data() -> pd.DataFrame:
     )
     df["Valor de Mercado"] = df["Valor de Mercado"].astype(float)
 
-    df = df[
-        df["Dados Obtidos"] == True
-    ]  # Only keep FIIs with data obtained in Investidor10 FII page
+    df = df[df["Dados Obtidos"]]
     df = df[
         [
             "Ticker",
@@ -130,7 +128,7 @@ def get_data() -> pd.DataFrame:
             lambda row: type_segment_dict.get(row["Segmento"], row["Tipo"]), axis=1
         )
 
-    except:
+    except Exception:
         pass
 
     df["dy_rank"] = df["Dividend Yield"].rank(ascending=False) * 2

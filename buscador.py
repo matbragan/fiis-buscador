@@ -17,7 +17,11 @@ st.set_page_config(page_title="Buscador", layout="wide")
 df = get_data()
 
 
-########################################### SIDEBAR FILTERS
+"""
+------------------------------------------
+SIDEBAR FILTERS
+------------------------------------------
+"""
 atualizado = df["Data Atualização"].min().strftime("%d/%m/%Y %Hh%Mmin")
 st.sidebar.text(f"Atualizado {atualizado}")
 
@@ -48,14 +52,6 @@ segmentos_list = sorted(df["Segmento"].dropna().unique())
 segmentos = st.sidebar.multiselect("Segmento(s)", options=segmentos_list, default=None)
 if segmentos:
     df = df[df["Segmento"].isin(segmentos)]
-
-try:
-    segmentos2_list = sorted(df["Segmento2"].dropna().unique())
-    segmentos2 = st.sidebar.multiselect("Segmento(s)2", options=segmentos2_list, default=None)
-    if segmentos2:
-        df = df[df["Segmento2"].isin(segmentos2)]
-except:
-    pass
 
 
 def numeric_cast(str_value):
@@ -113,7 +109,11 @@ if wanted_tickers:
     df = df[df["Ticker"].isin(get_wanted_tickers())]
 
 
-########################################### MAIN TABLE
+"""
+------------------------------------------
+MAIN TABLE
+------------------------------------------
+"""
 st.title(f"{df.shape[0]} FIIs")
 
 # Criar coluna com estrela para FIIs que o usuário possui

@@ -102,7 +102,7 @@ def get_tickers_with_cnpj():
                         cnpj = cnpj_map.get(ticker, "")
                         # Garante que CNPJ seja string
                         tickers_dict[ticker] = str(cnpj) if pd.notna(cnpj) and cnpj != "nan" else ""
-        except Exception as e:
+        except Exception:
             pass
 
     return tickers_dict

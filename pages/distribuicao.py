@@ -2,8 +2,6 @@ import json
 import os
 import sys
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
 import pandas as pd
 import plotly.express as px
 import streamlit as st
@@ -11,13 +9,20 @@ import streamlit as st
 from src.get_fiis import get_data
 from src.tickers import get_my_tickers
 
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 st.set_page_config(page_title="Distribuição", layout="wide")
 
 # Carrega os dados dos FIIs
 df = get_data()
 df = df[df["Ticker"].isin(get_my_tickers())].sort_values("Ticker")
 
-########################################### CARREGAMENTO DAS QUANTIDADES
+
+"""
+------------------------------------------
+CARREGAMENTO DAS QUANTIDADES
+------------------------------------------
+"""
 
 QUANTITY_FILE = "my_fiis_quantities.json"
 
@@ -33,7 +38,11 @@ def load_quantities():
 # Carrega as quantidades
 quantities = load_quantities()
 
-########################################### VERIFICAÇÃO DE DADOS
+"""
+------------------------------------------
+VERIFICAÇÃO DE DADOS
+------------------------------------------
+"""
 
 if not quantities or all(qty == 0 for qty in quantities.values()):
     st.warning("⚠️ Nenhuma quantidade de FII foi encontrada!")
@@ -52,7 +61,11 @@ if not active_fiis:
     )
     st.stop()
 
-########################################### RESUMO GERAL
+"""
+------------------------------------------
+RESUMO GERAL
+------------------------------------------
+"""
 
 col1, col2, col3, col4, col5 = st.columns(5)
 
@@ -96,7 +109,11 @@ with col4:
 with col5:
     st.metric("📊 Último Yield Ponderado", f"{ultimo_yield_ponderado:.2f}%".replace(".", ","))
 
-########################################### GRÁFICO DE DISTRIBUIÇÃO POR SEGMENTO
+"""
+------------------------------------------
+GRÁFICO DE DISTRIBUIÇÃO POR SEGMENTO
+------------------------------------------
+"""
 
 # Calcula o valor por segmento
 segmento_data = {}
@@ -162,7 +179,11 @@ if segmento_data:
 
     st.plotly_chart(fig_pizza, width="stretch")
 
-########################################### GRÁFICO DE BARRAS POR FII
+"""
+------------------------------------------
+GRÁFICO DE BARRAS POR FII
+------------------------------------------
+"""
 
 # Prepara dados para gráfico de barras
 fiis_data = []
@@ -223,7 +244,11 @@ fig_barras.update_layout(
 
 st.plotly_chart(fig_barras, width="stretch")
 
-########################################### INFORMAÇÕES ADICIONAIS
+"""
+------------------------------------------
+INFORMAÇÕES ADICIONAIS
+------------------------------------------
+"""
 
 atualizado = df["Data Atualização"].min().strftime("%d/%m/%Y %Hh%Mmin")
 st.sidebar.text(f"Atualizado {atualizado}")

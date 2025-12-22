@@ -2,18 +2,12 @@ import json
 import os
 import sys
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
 import pandas as pd
 import streamlit as st
 
 from src.get_fiis import get_data
-from src.tickers import (
-    get_my_tickers,
-    get_my_tickers_dict,
-    get_wanted_tickers,
-    get_wanted_tickers_dict,
-)
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 st.set_page_config(page_title="Quantidades", layout="wide")
 
@@ -21,29 +15,29 @@ st.set_page_config(page_title="Quantidades", layout="wide")
 st.markdown(
     """
 <style>
-    
+
     .fii-container:hover {
         background-color: rgba(255, 255, 255, 0.08);
         border-color: rgba(255, 255, 255, 0.2);
     }
-    
+
     /* Estilo para o número input */
     .stNumberInput > div > div > input {
         text-align: center;
         font-weight: bold;
         border-radius: 8px;
     }
-    
+
     /* Espaçamento entre seções */
     .main-container {
         padding: 0.5rem;
     }
-    
+
     /* Melhor espaçamento para as métricas */
     .metric-container {
         margin: 0.5rem 0;
     }
-    
+
     /* Estilo para os botões */
     .stButton > button {
         border-radius: 8px;
@@ -57,7 +51,11 @@ st.markdown(
 # Carrega os dados dos FIIs
 df_all = get_data()
 
-########################################### PERSISTÊNCIA DOS DADOS DE QUANTIDADE
+"""
+------------------------------------------
+PERSISTÊNCIA DOS DADOS DE QUANTIDADE
+------------------------------------------
+"""
 
 QUANTITY_FILE = "my_fiis_quantities.json"
 WANTED_FIIS_FILE = "wanted_fiis.json"
@@ -112,7 +110,11 @@ if "previous_quantities" not in st.session_state:
 if "auto_save_flag" not in st.session_state:
     st.session_state.auto_save_flag = False
 
-########################################### SEÇÃO PARA ADICIONAR NOVOS FIIs
+"""
+------------------------------------------
+SEÇÃO PARA ADICIONAR NOVOS FIIs
+------------------------------------------
+"""
 
 st.header("🏢 Meus FIIs")
 
@@ -142,7 +144,11 @@ if available_tickers:
 else:
     st.info("Todos os FIIs disponíveis já foram adicionados.")
 
-########################################### INTERFACE PARA INSERIR QUANTIDADES
+"""
+------------------------------------------
+INTERFACE PARA INSERIR QUANTIDADES
+------------------------------------------
+"""
 
 st.markdown("<br>", unsafe_allow_html=True)
 st.markdown("### 📋 Meus FIIs Cadastrados")
@@ -174,7 +180,7 @@ for i, (ticker, cotacao) in enumerate(fiis_data):
         current_qty = st.session_state.quantities.get(ticker, 0)
 
         # Container para cada FII com estilo mais compacto
-        st.markdown(f'<div class="fii-container">', unsafe_allow_html=True)
+        st.markdown('<div class="fii-container">', unsafe_allow_html=True)
 
         # Header do FII com botão de remover (todos os FIIs podem ser removidos)
         header_col1, header_col2 = st.columns([4, 1])
@@ -234,7 +240,11 @@ else:
     st.session_state.quantities = edited_quantities
     st.session_state.previous_quantities = edited_quantities.copy()
 
-########################################### SEÇÃO PARA FIIs DESEJADOS
+"""
+------------------------------------------
+SEÇÃO PARA FIIs DESEJADOS
+------------------------------------------
+"""
 
 st.markdown("---")
 st.header("⭐ FIIs Desejados")
@@ -301,7 +311,7 @@ if st.session_state.wanted_fiis:
                 current_wanted_col = wanted_col2
 
             with current_wanted_col:
-                st.markdown(f'<div class="fii-container">', unsafe_allow_html=True)
+                st.markdown('<div class="fii-container">', unsafe_allow_html=True)
 
                 # Header do FII com botão de remover
                 wanted_header_col1, wanted_header_col2 = st.columns([4, 1])
@@ -326,7 +336,11 @@ if st.session_state.wanted_fiis:
                     st.markdown(f"**📊 P/VP:** {pvp:.2f}")
                 st.markdown("</div>", unsafe_allow_html=True)
 
-########################################### INFORMAÇÕES ADICIONAIS
+"""
+------------------------------------------
+INFORMAÇÕES ADICIONAIS
+------------------------------------------
+"""
 
 if not df.empty:
     atualizado = df["Data Atualização"].min().strftime("%d/%m/%Y %Hh%Mmin")
