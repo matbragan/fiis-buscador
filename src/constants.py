@@ -10,8 +10,9 @@ FUNDAMENTUS_FILE_NAME = "fundamentus_fiis"
 COMMUNICATIONS_FILE_NAME = "communications"
 WARD_FILE_NAME = "ward_fiis"
 
-QUANTITY_FILE = "my_fiis_quantities.json"
+MY_FIIS_FILE = "my_fiis.json"
 WANTED_FIIS_FILE = "wanted_fiis.json"
+COMMUNICATIONS_READ_FILE = "communications_read.json"
 
 PERCENT_COLS = ["Dividend Yield", "Vacância", "Variação 12M", "Último Yield"]
 MONEY_COLS = ["Cotação", "Último Rendimento"]

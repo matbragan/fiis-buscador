@@ -3,26 +3,28 @@ import os
 
 import pandas as pd
 
-from src.constants import INVESTIDOR10_FILE_NAME, QUANTITY_FILE, WANTED_FIIS_FILE
+from src.constants import INVESTIDOR10_FILE_NAME, MY_FIIS_FILE, WANTED_FIIS_FILE
 
 
 def _get_file_path(filename):
     """Retorna o caminho completo do arquivo, tentando diferentes locais"""
+    project_root = os.path.dirname(os.path.dirname(__file__))
     possible_paths = [
-        filename,
-        os.path.join(os.path.dirname(os.path.dirname(__file__)), filename),
-        os.path.join(os.getcwd(), filename),
+        os.path.join(project_root, "config", filename),  # Primeiro tenta em config/
+        filename,  # Depois tenta caminho relativo atual
+        os.path.join(project_root, filename),  # Depois tenta na raiz do projeto
+        os.path.join(os.getcwd(), filename),  # Por último tenta no diretório de trabalho
     ]
     for path in possible_paths:
         if os.path.exists(path):
             return path
-    # Retorna o primeiro caminho se não existir (será criado)
-    return possible_paths[0]
+    # Retorna o caminho em config/ se não existir (será criado)
+    return os.path.join(project_root, "config", filename)
 
 
 def get_my_tickers():
     """Retorna um set com os tickers dos FIIs que o usuário possui (carregados do arquivo JSON)"""
-    file_path = _get_file_path(QUANTITY_FILE)
+    file_path = _get_file_path(MY_FIIS_FILE)
     if os.path.exists(file_path):
         with open(file_path, "r") as f:
             quantities = json.load(f)
@@ -42,7 +44,7 @@ def get_wanted_tickers():
 
 def get_my_tickers_dict():
     """Retorna um dicionário com os tickers dos FIIs que o usuário possui (para compatibilidade)"""
-    file_path = _get_file_path(QUANTITY_FILE)
+    file_path = _get_file_path(MY_FIIS_FILE)
     if os.path.exists(file_path):
         with open(file_path, "r") as f:
             quantities = json.load(f)

@@ -4,7 +4,7 @@ import sys
 
 import streamlit as st
 
-from src.constants import FNET_BASE_URL
+from src.constants import FNET_BASE_URL, COMMUNICATIONS_READ_FILE
 from src.get_communications import get_data
 from src.tickers import get_my_tickers, get_wanted_tickers
 
@@ -15,26 +15,31 @@ st.set_page_config(page_title="Comunicados", layout="wide")
 df = get_data()
 df = df[df["Ticker"].isin(get_my_tickers() | get_wanted_tickers())]
 
-"""
-------------------------------------------
-PERSISTÊNCIA DOS CHECKBOXES
-------------------------------------------
-"""
+# PERSISTÊNCIA DOS CHECKBOXES
 
-PERSISTENCE_FILE = "fnet_read.json"
+
+def _get_config_path(filename):
+    """Retorna o caminho completo do arquivo de configuração"""
+    project_root = os.path.dirname(os.path.dirname(__file__))
+    config_path = os.path.join(project_root, "config", filename)
+    # Garante que o diretório config existe
+    os.makedirs(os.path.dirname(config_path), exist_ok=True)
+    return config_path
 
 
 # Função para carregar os dados do JSON
 def load_checkbox_state():
-    if os.path.exists(PERSISTENCE_FILE):
-        with open(PERSISTENCE_FILE, "r") as f:
+    file_path = _get_config_path(COMMUNICATIONS_READ_FILE)
+    if os.path.exists(file_path):
+        with open(file_path, "r") as f:
             return json.load(f)
     return {}
 
 
 # Função para salvar os dados no JSON
 def save_checkbox_state(state_dict):
-    with open(PERSISTENCE_FILE, "w") as f:
+    file_path = _get_config_path(COMMUNICATIONS_READ_FILE)
+    with open(file_path, "w") as f:
         json.dump(state_dict, f)
 
 
@@ -42,11 +47,8 @@ def save_checkbox_state(state_dict):
 if "read" not in st.session_state:
     st.session_state.read = load_checkbox_state()
 
-"""
-------------------------------------------
-SIDEBAR FILTERS
-------------------------------------------
-"""
+# SIDEBAR FILTERS
+
 atualizado = df["Data Atualização"].min().strftime("%d/%m/%Y %Hh%Mmin")
 st.sidebar.text(f"Atualizado {atualizado}")
 
@@ -79,11 +81,7 @@ wanted_tickers = st.sidebar.toggle("FIIs Desejados")
 if wanted_tickers:
     df = df[df["Ticker"].isin(get_wanted_tickers())]
 
-"""
-------------------------------------------
-TABELA INTERATIVA
-------------------------------------------
-"""
+# TABELA INTERATIVA
 
 # Cria um ID único por linha
 df["ID"] = df["Ticker"] + "_" + df["Data de Entrega"].astype(str) + "_" + df["Versão"].astype(str)

@@ -5,6 +5,7 @@ import sys
 import pandas as pd
 import streamlit as st
 
+from src.constants import MY_FIIS_FILE, WANTED_FIIS_FILE
 from src.get_fiis import get_data
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -51,41 +52,47 @@ st.markdown(
 # Carrega os dados dos FIIs
 df_all = get_data()
 
-"""
-------------------------------------------
-PERSISTÊNCIA DOS DADOS DE QUANTIDADE
-------------------------------------------
-"""
+# PERSISTÊNCIA DOS DADOS DE QUANTIDADE
 
-QUANTITY_FILE = "my_fiis_quantities.json"
-WANTED_FIIS_FILE = "wanted_fiis.json"
+
+def _get_config_path(filename):
+    """Retorna o caminho completo do arquivo de configuração"""
+    project_root = os.path.dirname(os.path.dirname(__file__))
+    config_path = os.path.join(project_root, "config", filename)
+    # Garante que o diretório config existe
+    os.makedirs(os.path.dirname(config_path), exist_ok=True)
+    return config_path
 
 
 def load_quantities():
     """Carrega as quantidades salvas dos FIIs"""
-    if os.path.exists(QUANTITY_FILE):
-        with open(QUANTITY_FILE, "r") as f:
+    file_path = _get_config_path(MY_FIIS_FILE)
+    if os.path.exists(file_path):
+        with open(file_path, "r") as f:
             return json.load(f)
     return {}
 
 
 def save_quantities(quantities_dict):
     """Salva as quantidades dos FIIs"""
-    with open(QUANTITY_FILE, "w") as f:
+    file_path = _get_config_path(MY_FIIS_FILE)
+    with open(file_path, "w") as f:
         json.dump(quantities_dict, f)
 
 
 def load_wanted_fiis():
     """Carrega os FIIs desejados salvos"""
-    if os.path.exists(WANTED_FIIS_FILE):
-        with open(WANTED_FIIS_FILE, "r") as f:
+    file_path = _get_config_path(WANTED_FIIS_FILE)
+    if os.path.exists(file_path):
+        with open(file_path, "r") as f:
             return json.load(f)
     return {}
 
 
 def save_wanted_fiis(wanted_fiis_dict):
     """Salva os FIIs desejados"""
-    with open(WANTED_FIIS_FILE, "w") as f:
+    file_path = _get_config_path(WANTED_FIIS_FILE)
+    with open(file_path, "w") as f:
         json.dump(wanted_fiis_dict, f)
 
 
@@ -110,11 +117,7 @@ if "previous_quantities" not in st.session_state:
 if "auto_save_flag" not in st.session_state:
     st.session_state.auto_save_flag = False
 
-"""
-------------------------------------------
-SEÇÃO PARA ADICIONAR NOVOS FIIs
-------------------------------------------
-"""
+# SEÇÃO PARA ADICIONAR NOVOS FIIs
 
 st.header("🏢 Meus FIIs")
 
@@ -144,11 +147,7 @@ if available_tickers:
 else:
     st.info("Todos os FIIs disponíveis já foram adicionados.")
 
-"""
-------------------------------------------
-INTERFACE PARA INSERIR QUANTIDADES
-------------------------------------------
-"""
+# INTERFACE PARA INSERIR QUANTIDADES
 
 st.markdown("<br>", unsafe_allow_html=True)
 st.markdown("### 📋 Meus FIIs Cadastrados")
@@ -240,11 +239,7 @@ else:
     st.session_state.quantities = edited_quantities
     st.session_state.previous_quantities = edited_quantities.copy()
 
-"""
-------------------------------------------
-SEÇÃO PARA FIIs DESEJADOS
-------------------------------------------
-"""
+# SEÇÃO PARA FIIs DESEJADOS
 
 st.markdown("---")
 st.header("⭐ FIIs Desejados")
@@ -336,11 +331,7 @@ if st.session_state.wanted_fiis:
                     st.markdown(f"**📊 P/VP:** {pvp:.2f}")
                 st.markdown("</div>", unsafe_allow_html=True)
 
-"""
-------------------------------------------
-INFORMAÇÕES ADICIONAIS
-------------------------------------------
-"""
+# INFORMAÇÕES ADICIONAIS
 
 if not df.empty:
     atualizado = df["Data Atualização"].min().strftime("%d/%m/%Y %Hh%Mmin")
