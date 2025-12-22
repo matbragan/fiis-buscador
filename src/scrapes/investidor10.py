@@ -1,17 +1,17 @@
+"""
+Scraper para obter dados dos FIIs do site Investidor10.
+"""
+
 import logging
-import os
 import re
-import sys
 from datetime import datetime
 
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 
-from src.constants import HEADERS, INVESTIDOR10_BASE_URL, INVESTIDOR10_FILE_NAME
+from config.settings import HEADERS, INVESTIDOR10_BASE_URL, INVESTIDOR10_FILE
 from src.utils import write_csv_file
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
 log_format = "%(asctime)s - %(levelname)s - %(message)s"
 logging.basicConfig(format=log_format, level=logging.INFO)
@@ -466,4 +466,4 @@ if __name__ == "__main__":
     FIIsScraper = Investidor10Scraper()
     fiis = FIIsScraper.get_all_fiis()
 
-    write_csv_file(data=fiis, file_name=INVESTIDOR10_FILE_NAME)
+    write_csv_file(data=fiis, file_path=INVESTIDOR10_FILE)

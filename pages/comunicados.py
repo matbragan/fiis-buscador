@@ -1,14 +1,10 @@
 import json
-import os
-import sys
 
 import streamlit as st
 
-from src.constants import COMMUNICATIONS_READ_FILE, FNET_BASE_URL
+from config.settings import COMMUNICATIONS_READ_FILE, FNET_BASE_URL
 from src.get_communications import get_data
 from src.tickers import get_my_tickers, get_wanted_tickers
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 st.set_page_config(page_title="Comunicados", layout="wide")
 
@@ -18,28 +14,15 @@ df = df[df["Ticker"].isin(get_my_tickers() | get_wanted_tickers())]
 # PERSISTÊNCIA DOS CHECKBOXES
 
 
-def _get_config_path(filename):
-    """Retorna o caminho completo do arquivo de configuração"""
-    project_root = os.path.dirname(os.path.dirname(__file__))
-    config_path = os.path.join(project_root, "config", filename)
-    # Garante que o diretório config existe
-    os.makedirs(os.path.dirname(config_path), exist_ok=True)
-    return config_path
-
-
 # Função para carregar os dados do JSON
 def load_checkbox_state():
-    file_path = _get_config_path(COMMUNICATIONS_READ_FILE)
-    if os.path.exists(file_path):
-        with open(file_path, "r") as f:
-            return json.load(f)
-    return {}
+    with open(COMMUNICATIONS_READ_FILE, "r") as f:
+        return json.load(f)
 
 
 # Função para salvar os dados no JSON
 def save_checkbox_state(state_dict):
-    file_path = _get_config_path(COMMUNICATIONS_READ_FILE)
-    with open(file_path, "w") as f:
+    with open(COMMUNICATIONS_READ_FILE, "w") as f:
         json.dump(state_dict, f)
 
 

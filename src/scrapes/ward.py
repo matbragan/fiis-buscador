@@ -1,7 +1,5 @@
 import logging
-import os
 import re
-import sys
 import time
 
 import pandas as pd
@@ -16,10 +14,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
-from src.constants import WARD_FILE_NAME
+from config.settings import WARD_FILE
 from src.utils import write_csv_file
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
 log_format = "%(asctime)s - %(levelname)s - %(message)s"
 logging.basicConfig(format=log_format, level=logging.INFO)
@@ -219,4 +215,4 @@ def get_ward_fiis() -> pd.DataFrame:
 
 if __name__ == "__main__":
     fiis = get_ward_fiis()
-    write_csv_file(data=fiis, file_name=WARD_FILE_NAME)
+    write_csv_file(data=fiis, file_path=WARD_FILE)

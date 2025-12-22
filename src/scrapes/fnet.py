@@ -1,6 +1,5 @@
 import argparse
 import logging
-import os
 import sys
 import tempfile
 from datetime import datetime
@@ -14,11 +13,9 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
-from src.constants import COMMUNICATIONS_FILE_NAME, FNET_BASE_URL
+from config.settings import COMMUNICATIONS_FILE, FNET_BASE_URL
 from src.tickers import get_tickers_with_cnpj
 from src.utils import write_csv_file
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
 log_format = "%(asctime)s - %(levelname)s - %(message)s"
 logging.basicConfig(format=log_format, level=logging.INFO)
@@ -250,4 +247,4 @@ if __name__ == "__main__":
 
     communications = get_many_fii_communications(tickers_to_process)
 
-    write_csv_file(data=communications, file_name=COMMUNICATIONS_FILE_NAME, mode=write_mode)
+    write_csv_file(data=communications, file_path=COMMUNICATIONS_FILE, mode=write_mode)

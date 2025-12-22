@@ -1,7 +1,7 @@
 import pandas as pd
 import streamlit as st
 
-from src.constants import (
+from config.settings import (
     BIG_MONEY_COLS,
     FLOAT_COLS,
     INT_COLS,

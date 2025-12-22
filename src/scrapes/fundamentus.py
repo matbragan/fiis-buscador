@@ -1,15 +1,11 @@
 import logging
-import os
-import sys
 import time
 
 import pandas as pd
 import requests
 
-from src.constants import FUNDAMENTUS_FILE_NAME, FUNDAMENTUS_URL, HEADERS
+from config.settings import FUNDAMENTUS_FILE, FUNDAMENTUS_URL, HEADERS
 from src.utils import write_csv_file
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
 log_format = "%(asctime)s - %(levelname)s - %(message)s"
 logging.basicConfig(format=log_format, level=logging.INFO)
@@ -57,4 +53,4 @@ def get_fundamentus_data(max_attempts: int = 20) -> pd.DataFrame:
 if __name__ == "__main__":
     fiis = get_fundamentus_data()
 
-    write_csv_file(data=fiis, file_name=FUNDAMENTUS_FILE_NAME)
+    write_csv_file(data=fiis, file_path=FUNDAMENTUS_FILE)

@@ -4,12 +4,12 @@ import pandas as pd
 from pandas.tseries.offsets import MonthEnd
 from tzlocal import get_localzone
 
-from src.constants import COMMUNICATIONS_FILE_NAME
+from config.settings import COMMUNICATIONS_FILE
 
 
 def get_data() -> pd.DataFrame:
 
-    df = pd.read_csv(f"downloads/{COMMUNICATIONS_FILE_NAME}.csv")
+    df = pd.read_csv(COMMUNICATIONS_FILE)
 
     df.fillna("-", inplace=True)
 

@@ -3,7 +3,7 @@ import os
 
 import pandas as pd
 
-from src.constants import INVESTIDOR10_FILE_NAME, MY_FIIS_FILE, WANTED_FIIS_FILE
+from config.settings import INVESTIDOR10_FILE, MY_FIIS_FILE, WANTED_FIIS_FILE
 
 
 def _get_file_path(filename):
@@ -69,11 +69,9 @@ def get_tickers_with_cnpj():
     # Busca CNPJs do arquivo CSV do investidor10
     # Tenta diferentes caminhos possíveis
     possible_paths = [
-        f"downloads/{INVESTIDOR10_FILE_NAME}.csv",
-        os.path.join(
-            os.path.dirname(os.path.dirname(__file__)), f"downloads/{INVESTIDOR10_FILE_NAME}.csv"
-        ),
-        os.path.join(os.getcwd(), f"downloads/{INVESTIDOR10_FILE_NAME}.csv"),
+        INVESTIDOR10_FILE,
+        os.path.join(os.path.dirname(os.path.dirname(__file__)), INVESTIDOR10_FILE),
+        os.path.join(os.getcwd(), INVESTIDOR10_FILE),
     ]
 
     investidor10_file = None

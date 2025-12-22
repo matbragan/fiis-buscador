@@ -24,6 +24,7 @@ source .venv/bin/activate
 Instalar libs de dependência
 ~~~sh
 pip install -r requirements.txt
+pip install -e .
 ~~~
 
 Fazer scrapes local

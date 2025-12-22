@@ -1,14 +1,11 @@
 import json
 import os
-import sys
 
 import pandas as pd
 import streamlit as st
 
-from src.constants import MY_FIIS_FILE, WANTED_FIIS_FILE
+from config.settings import MY_FIIS_FILE, WANTED_FIIS_FILE
 from src.get_fiis import get_data
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 st.set_page_config(page_title="Quantidades", layout="wide")
 

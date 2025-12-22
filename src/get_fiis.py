@@ -2,14 +2,15 @@ import numpy as np
 import pandas as pd
 from tzlocal import get_localzone
 
-from src.constants import (
+from config.settings import (
     BIG_MONEY_COLS,
     FLOAT_COLS,
-    FUNDAMENTUS_FILE_NAME,
+    FUNDAMENTUS_FILE,
     INT_COLS,
-    INVESTIDOR10_FILE_NAME,
+    INVESTIDOR10_FILE,
     MONEY_COLS,
     PERCENT_COLS,
+    WARD_FILE,
 )
 
 
@@ -20,8 +21,8 @@ def join_scrapes() -> pd.DataFrame:
     Returns:
         pd.DataFrame: Um DataFrame contendo os dados dos FIIs.
     """
-    investidor10_df = pd.read_csv(f"downloads/{INVESTIDOR10_FILE_NAME}.csv")
-    fundamentus_df = pd.read_csv(f"downloads/{FUNDAMENTUS_FILE_NAME}.csv")
+    investidor10_df = pd.read_csv(INVESTIDOR10_FILE)
+    fundamentus_df = pd.read_csv(FUNDAMENTUS_FILE)
 
     fundamentus_df = fundamentus_df.rename(columns={"Papel": "Ticker"})
     fundamentus_df = fundamentus_df[["Ticker", "Qtd de imóveis", "Valor de Mercado"]]
@@ -82,7 +83,7 @@ def get_data() -> pd.DataFrame:
     ]
 
     try:
-        ward_fiis = pd.read_csv("downloads/ward_fiis.csv")
+        ward_fiis = pd.read_csv(WARD_FILE)
         ward_fiis = ward_fiis.rename(columns={"Segmento": "Segmento2"})
         df = df.merge(ward_fiis, how="left", on="Ticker")
         condition = df["Segmento2"].isnull()
