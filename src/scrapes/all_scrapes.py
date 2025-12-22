@@ -1,7 +1,6 @@
+import logging
 import os
 import sys
-
-import logging
 
 from src.constants import (
     COMMUNICATIONS_FILE_NAME,

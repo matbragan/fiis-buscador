@@ -1,8 +1,7 @@
-import os
-import sys
-
 import logging
+import os
 import re
+import sys
 import time
 
 import pandas as pd

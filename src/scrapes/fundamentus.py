@@ -1,7 +1,6 @@
+import logging
 import os
 import sys
-
-import logging
 import time
 
 import pandas as pd

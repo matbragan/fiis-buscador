@@ -4,7 +4,7 @@ import sys
 
 import streamlit as st
 
-from src.constants import FNET_BASE_URL, COMMUNICATIONS_READ_FILE
+from src.constants import COMMUNICATIONS_READ_FILE, FNET_BASE_URL
 from src.get_communications import get_data
 from src.tickers import get_my_tickers, get_wanted_tickers
 
