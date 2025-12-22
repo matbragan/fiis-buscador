@@ -170,7 +170,6 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
+# Development files
 dev.ipynb
 *.pem
-communications_read.json
-remote_json.json
