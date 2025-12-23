@@ -121,64 +121,11 @@ df["Rank"] = df["Rank"] + 1
 
 df = df.drop(columns=["Data Atualização"])
 
-
-# Função para converter Valor Patrimonial que vem com texto (ex: "997,23 Milhões")
-def convert_valor_patrimonial(value):
-    """Converte Valor Patrimonial de string com texto para número"""
-    if pd.isna(value) or value == "" or value == "N/A":
-        return None
-    if isinstance(value, (int, float)):
-        return float(value)
-
-    try:
-        # Remover espaços e converter para string
-        value_str = str(value).strip()
-
-        # Verificar se contém "Bilhão" ou "Bilhões"
-        if "Bilhão" in value_str or "Bilhões" in value_str:
-            # Remover texto e converter formato brasileiro para número
-            num_str = (
-                value_str.replace("Bilhão", "").replace("Bilhões", "").replace("R$", "").strip()
-            )
-            num_str = num_str.replace(".", "").replace(",", ".")
-            return float(num_str) * 1_000_000_000
-
-        # Verificar se contém "Milhão" ou "Milhões"
-        elif "Milhão" in value_str or "Milhões" in value_str:
-            # Remover texto e converter formato brasileiro para número
-            num_str = (
-                value_str.replace("Milhão", "").replace("Milhões", "").replace("R$", "").strip()
-            )
-            num_str = num_str.replace(".", "").replace(",", ".")
-            return float(num_str) * 1_000_000
-
-        # Verificar se contém "Mil"
-        elif "Mil" in value_str:
-            # Remover texto e converter formato brasileiro para número
-            num_str = value_str.replace("Mil", "").replace("R$", "").strip()
-            num_str = num_str.replace(".", "").replace(",", ".")
-            return float(num_str) * 1_000
-
-        # Se não tem texto, tentar converter diretamente (formato brasileiro)
-        else:
-            num_str = str(value_str).replace("R$", "").strip()
-            num_str = num_str.replace(".", "").replace(",", ".")
-            return float(num_str)
-    except (ValueError, AttributeError):
-        return None
-
-
-# Processar Valor Patrimonial antes de converter para numérico
-if "Valor Patrimonial" in df.columns:
-    df["Valor Patrimonial"] = df["Valor Patrimonial"].apply(convert_valor_patrimonial)
-
 # Garantir que colunas numéricas sejam do tipo numérico (não string)
 # Converter valores de string para numérico se necessário
 for col in PERCENT_COLS + MONEY_COLS + BIG_MONEY_COLS + FLOAT_COLS + INT_COLS:
     if col in df.columns:
-        # Para Valor Patrimonial, já foi processado acima
-        if col != "Valor Patrimonial":
-            df[col] = pd.to_numeric(df[col], errors="coerce")
+        df[col] = pd.to_numeric(df[col], errors="coerce")
 
 # Configurar formatação de colunas para st.dataframe
 column_config = {}

@@ -7,6 +7,7 @@ HEADERS = {
 INVESTIDOR10_BASE_URL = "https://investidor10.com.br/fiis/"
 FUNDAMENTUS_URL = "https://www.fundamentus.com.br/fii_resultado.php"
 FNET_BASE_URL = "https://fnet.bmfbovespa.com.br/fnet/publico/abrirGerenciadorDocumentosCVM"
+WARD_BASE_URL = "https://www.ward.app.br/fiis"
 
 # File Paths
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

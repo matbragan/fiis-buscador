@@ -1,3 +1,7 @@
+"""
+Scraper para obter dados dos FIIs do site Fundamentus.
+"""
+
 import logging
 import time
 

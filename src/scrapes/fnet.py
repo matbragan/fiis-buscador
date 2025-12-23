@@ -1,3 +1,7 @@
+"""
+Scraper para obter comunicados dos FIIs do site FNET.
+"""
+
 import argparse
 import logging
 import sys
@@ -21,7 +25,7 @@ log_format = "%(asctime)s - %(levelname)s - %(message)s"
 logging.basicConfig(format=log_format, level=logging.INFO)
 
 
-def get_fii_communications(
+def get_unique_fii_communications(
     ticker: str, cnpj: str, base_url: str = FNET_BASE_URL, attempt: int = 1, max_attempts: int = 20
 ) -> pd.DataFrame:
     """
@@ -46,7 +50,6 @@ def get_fii_communications(
     driver = webdriver.Chrome(options=options)
 
     try:
-        # Garante que CNPJ seja string antes de processar
         cnpj = str(cnpj) if cnpj else ""
         cnpj = cnpj.replace("/", "").replace("-", "").replace(".", "")
         url = base_url + f"?cnpjFundo={cnpj}"
@@ -72,6 +75,20 @@ def get_fii_communications(
     finally:
         driver.quit()
 
+    if len(data) == 0:
+        if attempt < max_attempts:
+            if attempt % 5 == 0:
+                logging.info(
+                    f"{ticker} - Nenhum comunicado encontrado, tentativa {attempt}/{max_attempts}..."
+                )
+            sleep(0.8)
+            return get_unique_fii_communications(ticker, cnpj, base_url, attempt + 1, max_attempts)
+        else:
+            logging.error(
+                f"{ticker} - Nenhum comunicado encontrado após {max_attempts} tentativas."
+            )
+            return pd.DataFrame()
+
     columns = [
         "Nome do Fundo",
         "Fundo/Classe",
@@ -87,23 +104,6 @@ def get_fii_communications(
     ]
 
     df = pd.DataFrame(data, columns=columns)
-
-    if len(df) == 0:
-        if attempt < max_attempts:
-            if attempt % 5 == 0:
-                logging.info(
-                    f"{ticker} - Nenhum comunicado encontrado, tentativa {attempt}/{max_attempts}..."
-                )
-            sleep(0.8)
-            return get_fii_communications(
-                ticker, cnpj, base_url, attempt=attempt + 1, max_attempts=max_attempts
-            )
-        else:
-            logging.error(
-                f"{ticker} - Nenhum comunicado encontrado após {max_attempts} tentativas."
-            )
-            # Retorna DataFrame vazio quando não consegue obter comunicados
-            return pd.DataFrame()
 
     df["Ticker"] = ticker
     df["CNPJ"] = cnpj
@@ -125,9 +125,41 @@ def get_fii_communications(
     return df
 
 
-def get_many_fii_communications(
-    tickers: dict, base_url: str = FNET_BASE_URL, retry_failed: bool = True
-) -> pd.DataFrame:
+def extract_fii_communications(
+    tickers: dict, base_url: str = FNET_BASE_URL
+) -> tuple[list[pd.DataFrame], list[str]]:
+    """
+    Extrai os comunicados de vários FIIs, juntando todos os comunicados em um único DataFrame, no site FNET.
+    Caso algum FII falhe na obtenção dos comunicados, ele é adicionado à lista de falhas para ser tentado novamente.
+
+    Args:
+        tickers (dict): Dicionário de tickers dos FII, onde a chave é o ticker e o valor é o CNPJ.
+        base_url (str): URL base para fazer a requisição.
+
+    Returns:
+        Retorna um tuple com duas listas:
+        - Lista de DataFrames, onde cada DataFrame contém os comunicados de um FII.
+        - Lista de tickers que falharam na obtenção dos comunicados.
+        Caso algum FII falhe na obtenção dos comunicados, ele é adicionado à lista de falhas para ser tentado novamente.
+    """
+    dfs = []
+    failed_tickers = []
+
+    for ticker, cnpj in tickers.items():
+        try:
+            df_fii = get_unique_fii_communications(ticker, cnpj, base_url)
+            if df_fii.empty or len(df_fii) == 0:
+                failed_tickers.append(ticker)
+            else:
+                dfs.append(df_fii)
+        except Exception as e:
+            logging.error(f"{ticker} - Falha ao obter comunicados: {e}")
+            failed_tickers.append(ticker)
+
+    return dfs, failed_tickers
+
+
+def main(tickers: dict, base_url: str = FNET_BASE_URL, retry_failed: bool = True) -> pd.DataFrame:
     """
     Obtém os 10 últimos comunicados de vários FII, no site FNET.
 
@@ -140,46 +172,20 @@ def get_many_fii_communications(
         pd.DataFrame: Um DataFrame contendo os comunicados dos FII.
     """
     logging.info("Leitura de comunicados do site FNET iniciando...")
-
-    dfs = []
-    failed_tickers = []
     logging.info(f"Obtendo comunicados para {len(tickers)} FIIs...")
 
-    for ticker, cnpj in tickers.items():
-        try:
-            df_fii = get_fii_communications(ticker, cnpj, base_url)
-            # Verifica se o DataFrame está vazio (nenhum comunicado encontrado após todas as tentativas)
-            if df_fii.empty or len(df_fii) == 0:
-                failed_tickers.append(ticker)
-            else:
-                dfs.append(df_fii)
-        except Exception as e:
-            logging.error(f"{ticker} - Falha ao obter comunicados: {e}")
-            failed_tickers.append(ticker)
+    dfs, failed_tickers = extract_fii_communications(tickers, base_url)
 
-    # Retry failed tickers if enabled
     if retry_failed and failed_tickers:
         logging.info(
-            f"🔄 Tentando novamente {len(failed_tickers)} FII(s) que falharam na primeira tentativa..."
+            f"Tentando novamente os {len(failed_tickers)} FIIs que falharam na primeira tentativa: {', '.join(failed_tickers)}"
         )
-        sleep(2)  # Pequena pausa antes de tentar novamente
+        sleep(2)
 
-        retry_failed_tickers = []
-        retry_tickers_dict = {ticker: tickers[ticker] for ticker in failed_tickers}
+        retry_tickers = {ticker: tickers[ticker] for ticker in failed_tickers}
+        retry_dfs, retry_failed_tickers = extract_fii_communications(retry_tickers, base_url)
 
-        for ticker, cnpj in retry_tickers_dict.items():
-            try:
-                df_fii = get_fii_communications(ticker, cnpj, base_url)
-                if df_fii.empty or len(df_fii) == 0:
-                    retry_failed_tickers.append(ticker)
-                else:
-                    dfs.append(df_fii)
-                    logging.info(f"✅ {ticker} - Sucesso na segunda tentativa!")
-            except Exception as e:
-                logging.error(f"{ticker} - Falha na segunda tentativa: {e}")
-                retry_failed_tickers.append(ticker)
-
-        # Atualiza a lista de falhas com os que ainda falharam após retry
+        dfs.extend(retry_dfs)
         failed_tickers = retry_failed_tickers
 
     if dfs:
@@ -187,18 +193,14 @@ def get_many_fii_communications(
         df["Data Atualização"] = datetime.now()
 
         if failed_tickers:
-            logging.info(
-                f'⚠️ FIIs que não conseguiram obter comunicados após todas as tentativas ({len(failed_tickers)}): {", ".join(failed_tickers)}'
+            logging.warning(
+                f'FIIs que não conseguiram obter comunicados após todas as tentativas: {len(failed_tickers)} - {", ".join(failed_tickers)}'
             )
         else:
-            logging.info("✅ Todos os comunicados obtidos com sucesso!")
+            logging.info("Todos os comunicados obtidos com sucesso!")
     else:
-        logging.warning("⚠️ Nenhum comunicado foi obtido para nenhum FII!")
+        logging.warning("Nenhum comunicado foi obtido para nenhum FII!")
         df = pd.DataFrame()
-        if failed_tickers:
-            logging.info(
-                f'❌ FIIs que falharam ({len(failed_tickers)}): {", ".join(failed_tickers)}'
-            )
 
     return df
 
@@ -216,14 +218,12 @@ if __name__ == "__main__":
     all_tickers = get_tickers_with_cnpj()
 
     if args.tickers:
-        # Filtra apenas os tickers passados como argumento
         filtered_tickers = {
             ticker: cnpj
             for ticker, cnpj in all_tickers.items()
             if ticker.upper() in [t.upper() for t in args.tickers]
         }
 
-        # Verifica se algum ticker não foi encontrado
         requested_tickers = [t.upper() for t in args.tickers]
         found_tickers = [t.upper() for t in filtered_tickers.keys()]
         missing_tickers = [t for t in requested_tickers if t not in found_tickers]
@@ -239,12 +239,11 @@ if __name__ == "__main__":
             f'Buscando comunicados para {len(filtered_tickers)} ticker(s): {", ".join(filtered_tickers.keys())}'
         )
         tickers_to_process = filtered_tickers
-        write_mode = "a"  # Modo append quando tickers são passados como argumento
+        write_mode = "a"
     else:
-        logging.info(f"Buscando comunicados para todos os {len(all_tickers)} ticker(s) cadastrados")
         tickers_to_process = all_tickers
-        write_mode = "w"  # Modo overwrite quando nenhum argumento é passado
+        write_mode = "w"
 
-    communications = get_many_fii_communications(tickers_to_process)
+    communications = main(tickers_to_process)
 
     write_csv_file(data=communications, file_path=COMMUNICATIONS_FILE, mode=write_mode)

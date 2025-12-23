@@ -116,7 +116,7 @@ if "auto_save_flag" not in st.session_state:
 
 # SEÇÃO PARA ADICIONAR NOVOS FIIs
 
-st.header("🏢 Meus FIIs")
+st.header("Meus FIIs")
 
 # Busca todos os FIIs disponíveis que não estão cadastrados (não estão no arquivo de quantidades)
 all_tickers = sorted(df_all["Ticker"].unique())
@@ -147,7 +147,6 @@ else:
 # INTERFACE PARA INSERIR QUANTIDADES
 
 st.markdown("<br>", unsafe_allow_html=True)
-st.markdown("### 📋 Meus FIIs Cadastrados")
 
 # Usa os FIIs que estão no arquivo de quantidades (todos os FIIs cadastrados)
 all_my_fiis_tickers = set(st.session_state.quantities.keys())
@@ -239,7 +238,7 @@ else:
 # SEÇÃO PARA FIIs DESEJADOS
 
 st.markdown("---")
-st.header("⭐ FIIs Desejados")
+st.header("FIIs Desejados")
 
 # Busca todos os FIIs disponíveis que não estão cadastrados como desejados
 all_tickers_wanted = sorted(df_all["Ticker"].unique())
@@ -277,7 +276,6 @@ else:
 # Mostra os FIIs desejados cadastrados
 if st.session_state.wanted_fiis:
     st.markdown("<br>", unsafe_allow_html=True)
-    st.markdown("### 📋 FIIs Desejados Cadastrados")
 
     # Usa os FIIs que estão no arquivo de desejados
     wanted_fiis_tickers = set(st.session_state.wanted_fiis.keys())

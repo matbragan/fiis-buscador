@@ -240,7 +240,7 @@ if not unread_count.empty:
         unsafe_allow_html=True,
     )
 
-    st.markdown(f"### 📋 {total_unread} Comunicados não lidos")
+    st.markdown(f"### {total_unread} Comunicados não lidos")
 
     # Cards em grid (3 colunas)
     num_cols = 3

@@ -18,4 +18,3 @@ max-complexity = 10
 per-file-ignores =
     __init__.py:F401
     test_*.py:F401
-

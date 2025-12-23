@@ -57,6 +57,8 @@ def get_data() -> pd.DataFrame:
     )
     df["Valor de Mercado"] = df["Valor de Mercado"].astype(float)
 
+    df["Qtd de imóveis"] = df["Qtd de imóveis"].fillna(0).astype(int)
+
     df = df[df["Dados Obtidos"]]
     df = df[
         [
