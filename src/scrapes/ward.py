@@ -308,6 +308,9 @@ def main() -> pd.DataFrame:
         segmentos = get_segmentos_list()
         segmentos_pattern = "|".join(segmentos)
 
+        # Aguarda um tempo adicional para garantir que a primeira página carregou completamente
+        time.sleep(2)
+
         for page in range(1, 36):
             time.sleep(0.8)
 
