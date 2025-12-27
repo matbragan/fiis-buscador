@@ -1,5 +1,6 @@
 import json
 
+import pandas as pd
 import streamlit as st
 
 from config.settings import COMMUNICATIONS_READ_FILE, FNET_BASE_URL
@@ -66,7 +67,16 @@ if wanted_tickers:
 
 # TABELA INTERATIVA
 
-# Cria um ID único por linha
+# Converte Data de Entrega de volta para datetime para ordenação correta
+df["Data de Entrega_DT"] = pd.to_datetime(df["Data de Entrega"], format="%Y/%m/%d %Hh%Mmin", errors="coerce")
+
+# Formata Data de Entrega para exibição (dia/mês/ano horas)
+df["Data de Entrega_Formatada"] = df["Data de Entrega_DT"].dt.strftime("%d/%m/%Y %Hh%Mmin")
+
+# Ordena por Data de Entrega (datetime) para manter ordenação correta
+df = df.sort_values(by=["Ticker", "Data de Entrega_DT", "Versão"], ascending=[True, False, False])
+
+# Cria um ID único por linha (usa a coluna original para compatibilidade)
 df["ID"] = df["Ticker"] + "_" + df["Data de Entrega"].astype(str) + "_" + df["Versão"].astype(str)
 df["ID"] = df["ID"].str.replace("/", "").str.replace(":", "").str.replace(" ", "")
 
@@ -120,7 +130,7 @@ edited_df = st.data_editor(
             "Categoria_Formatada",
             "Tipo",
             "Mês de Referência",
-            "Data de Entrega",
+            "Data de Entrega_Formatada",
             "Status_Formatado",
             "Versão",
         ]
@@ -130,6 +140,7 @@ edited_df = st.data_editor(
         "ID": None,
         "Categoria_Formatada": st.column_config.TextColumn(label="Categoria"),
         "Status_Formatado": st.column_config.TextColumn(label="Status"),
+        "Data de Entrega_Formatada": st.column_config.TextColumn(label="Data de Entrega"),
     },
     hide_index=True,
     width="stretch",
