@@ -3,7 +3,7 @@ import os
 
 import pandas as pd
 
-from config.settings import DOWNLOADS_DIR
+from config.settings import DOWNLOADS_DIR, PROJECT_ROOT
 
 log_format = "%(asctime)s - %(levelname)s - %(message)s"
 logging.basicConfig(format=log_format, level=logging.INFO)
@@ -29,6 +29,9 @@ def write_csv_file(data: pd.DataFrame, file_path: str, mode: str = "w") -> None:
     """
     ensure_downloads_folder()
 
+    # Calcula o caminho relativo a partir do PROJECT_ROOT para o log
+    relative_path = os.path.relpath(file_path, PROJECT_ROOT)
+
     if mode == "a" and os.path.exists(file_path):
         # Modo append: lê o arquivo existente e concatena com os novos dados
         existing_data = pd.read_csv(file_path)
@@ -37,8 +40,8 @@ def write_csv_file(data: pd.DataFrame, file_path: str, mode: str = "w") -> None:
         # Remove duplicatas completas mantendo a última ocorrência
         combined_data = combined_data.drop_duplicates(keep="last")
         combined_data.to_csv(file_path, index=False)
-        logging.info(f"Arquivo {file_path} atualizado (append) com sucesso!")
+        logging.info(f"Arquivo {relative_path} atualizado (append) com sucesso!")
     else:
         # Modo overwrite: escreve o arquivo normalmente
         data.to_csv(file_path, index=False)
-        logging.info(f"Arquivo {file_path} escrito com sucesso!")
+        logging.info(f"Arquivo {relative_path} escrito com sucesso!")
