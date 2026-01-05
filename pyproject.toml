@@ -43,6 +43,7 @@ exclude = '''
   | __pycache__
   | downloads
   | \.ipynb_checkpoints
+  | .*\.ipynb$
 )/
 '''
 
