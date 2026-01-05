@@ -1,4 +1,4 @@
-.PHONY: setup install run format lint check
+.PHONY: setup install format lint check run
 
 setup:
 	@if ! command -v pyenv >/dev/null 2>&1; then \
