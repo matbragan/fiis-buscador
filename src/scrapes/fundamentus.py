@@ -50,7 +50,7 @@ def get_fundamentus_data(max_attempts: int = 20) -> pd.DataFrame:
             logging.error(f"Erro na requisição: {response.status_code}")
             return
 
-    logging.info("Leitura de dados do site Fundamentus concluida!")
+    logging.info("✓ Leitura de dados do site Fundamentus concluida!")
     return df
 
 

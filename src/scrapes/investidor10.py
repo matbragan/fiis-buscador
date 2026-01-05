@@ -335,7 +335,7 @@ class Investidor10Scraper:
 
         all_fiis["Data Atualização"] = datetime.now()
 
-        logging.info("Leitura de FIIs do site Investidor10 concluída!")
+        logging.info("✓ Leitura de FIIs do site Investidor10 concluída!")
         return all_fiis
 
 

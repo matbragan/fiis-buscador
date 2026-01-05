@@ -287,7 +287,7 @@ def process_funds_data(fundos: List[Dict[str, str]]) -> pd.DataFrame:
         "Agências": "Agências Bancárias",
     }
     df["Segmento"] = df["Segmento"].replace(replacements)
-    logging.info(f"Total de FIIs extraídos: {len(df)}")
+    logging.info(f"✓ Total de FIIs extraídos: {len(df)}")
 
     return df
 

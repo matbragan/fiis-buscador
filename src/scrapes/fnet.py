@@ -197,7 +197,7 @@ def main(tickers: dict, base_url: str = FNET_BASE_URL, retry_failed: bool = True
                 f'FIIs que não conseguiram obter comunicados após todas as tentativas: {len(failed_tickers)} - {", ".join(failed_tickers)}'
             )
         else:
-            logging.info("Todos os comunicados obtidos com sucesso!")
+            logging.info("✓ Todos os comunicados obtidos com sucesso!")
     else:
         logging.warning("Nenhum comunicado foi obtido para nenhum FII!")
         df = pd.DataFrame()

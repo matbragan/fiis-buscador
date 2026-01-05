@@ -40,8 +40,8 @@ def write_csv_file(data: pd.DataFrame, file_path: str, mode: str = "w") -> None:
         # Remove duplicatas completas mantendo a última ocorrência
         combined_data = combined_data.drop_duplicates(keep="last")
         combined_data.to_csv(file_path, index=False)
-        logging.info(f"Arquivo {relative_path} atualizado (append) com sucesso!")
+        logging.info(f"✓ Arquivo {relative_path} atualizado (append) com sucesso!")
     else:
         # Modo overwrite: escreve o arquivo normalmente
         data.to_csv(file_path, index=False)
-        logging.info(f"Arquivo {relative_path} escrito com sucesso!")
+        logging.info(f"✓ Arquivo {relative_path} escrito com sucesso!")

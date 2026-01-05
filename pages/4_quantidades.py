@@ -200,16 +200,18 @@ if available_tickers:
     with add_col:
         st.markdown('<div class="fii-container">', unsafe_allow_html=True)
         st.markdown("### ➕ Adicionar FII")
-        
+
         selected_ticker = st.selectbox(
             "Selecione um FII:",
             options=available_tickers,
             key="new_fii_select",
             index=None,
-            label_visibility="collapsed"
+            label_visibility="collapsed",
         )
-        
-        if st.button("➕ Adicionar", type="primary", key="add_fii_button", use_container_width=True):
+
+        if st.button(
+            "➕ Adicionar", type="primary", key="add_fii_button", use_container_width=True
+        ):
             if selected_ticker:
                 # Adiciona o FII ao arquivo de quantidades com quantidade 0
                 st.session_state.quantities[selected_ticker] = 0
@@ -217,7 +219,7 @@ if available_tickers:
                 st.session_state.previous_quantities = st.session_state.quantities.copy()
                 st.success(f"✅ {selected_ticker} adicionado com sucesso!")
                 st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
 
 # Coleta todos os valores dos widgets
 edited_quantities = {}
@@ -257,16 +259,15 @@ if st.session_state.wanted_fiis:
 
     if not df_wanted.empty:
         # Organiza os FIIs desejados em um grid
-        wanted_fiis_data = [
-            (row["Ticker"], row.get("P/VP", 0)) for _, row in df_wanted.iterrows()
-        ]
+        wanted_fiis_data = [(row["Ticker"], row.get("P/VP", 0)) for _, row in df_wanted.iterrows()]
 
         # Busca todos os FIIs disponíveis que não estão cadastrados como desejados
         all_tickers_wanted = sorted(df_all["Ticker"].unique())
         available_tickers_wanted = [
             ticker
             for ticker in all_tickers_wanted
-            if ticker not in st.session_state.wanted_fiis and ticker not in st.session_state.quantities
+            if ticker not in st.session_state.wanted_fiis
+            and ticker not in st.session_state.quantities
         ]
 
         # Cria colunas para o grid dos FIIs desejados
@@ -323,20 +324,20 @@ if st.session_state.wanted_fiis:
             with wanted_add_col:
                 st.markdown('<div class="fii-container">', unsafe_allow_html=True)
                 st.markdown("### ➕ Adicionar FII")
-                
+
                 selected_ticker_wanted = st.selectbox(
                     "Selecione um FII:",
                     options=available_tickers_wanted,
                     key="new_wanted_fii_select",
                     index=None,
-                    label_visibility="collapsed"
+                    label_visibility="collapsed",
                 )
-                
+
                 if st.button(
                     "➕ Adicionar",
                     type="primary",
                     key="add_wanted_fii_button",
-                    use_container_width=True
+                    use_container_width=True,
                 ):
                     if selected_ticker_wanted:
                         # Adiciona o FII aos desejados

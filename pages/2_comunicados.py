@@ -68,7 +68,9 @@ if wanted_tickers:
 # TABELA INTERATIVA
 
 # Converte Data de Entrega de volta para datetime para ordenação correta
-df["Data de Entrega_DT"] = pd.to_datetime(df["Data de Entrega"], format="%Y/%m/%d %Hh%Mmin", errors="coerce")
+df["Data de Entrega_DT"] = pd.to_datetime(
+    df["Data de Entrega"], format="%Y/%m/%d %Hh%Mmin", errors="coerce"
+)
 
 # Formata Data de Entrega para exibição (dia/mês/ano horas)
 df["Data de Entrega_Formatada"] = df["Data de Entrega_DT"].dt.strftime("%d/%m/%Y %Hh%Mmin")
