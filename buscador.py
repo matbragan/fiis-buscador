@@ -11,6 +11,7 @@ from config.settings import (
 )
 from src.get_fiis import get_data
 from src.tickers import get_my_tickers, get_wanted_tickers
+from src.utils import get_last_update_date
 
 st.set_page_config(page_title="Buscador", layout="wide")
 
@@ -18,7 +19,7 @@ df = get_data()
 
 
 # SIDEBAR FILTERS
-atualizado = df["Data Atualização"].min().strftime("%d/%m/%Y %Hh%Mmin")
+atualizado = get_last_update_date()
 st.sidebar.text(f"Atualizado {atualizado}")
 
 

@@ -6,6 +6,8 @@ from queue import Empty, Queue
 
 import streamlit as st
 
+from src.utils import get_last_update_date
+
 st.set_page_config(page_title="Atualizar", layout="wide")
 
 # Caminho do Python do ambiente virtual
@@ -25,6 +27,9 @@ if not os.path.exists(SCRIPT_PATH):
     st.stop()
 
 st.title("Atualizar Dados")
+
+atualizado = get_last_update_date()
+st.sidebar.text(f"Atualizado {atualizado}")
 
 # Inicializa o estado da sessão
 if "process_running" not in st.session_state:

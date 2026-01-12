@@ -6,6 +6,7 @@ import streamlit as st
 
 from config.settings import MY_FIIS_FILE, WANTED_FIIS_FILE
 from src.get_fiis import get_data
+from src.utils import get_last_update_date
 
 st.set_page_config(page_title="Quantidades", layout="wide")
 
@@ -350,9 +351,5 @@ if st.session_state.wanted_fiis:
 
 # INFORMAÇÕES ADICIONAIS
 
-if not df.empty:
-    atualizado = df["Data Atualização"].min().strftime("%d/%m/%Y %Hh%Mmin")
-    st.sidebar.text(f"Atualizado {atualizado}")
-else:
-    atualizado = df_all["Data Atualização"].min().strftime("%d/%m/%Y %Hh%Mmin")
-    st.sidebar.text(f"Atualizado {atualizado}")
+atualizado = get_last_update_date()
+st.sidebar.text(f"Atualizado {atualizado}")

@@ -6,6 +6,7 @@ import streamlit as st
 from config.settings import COMMUNICATIONS_READ_FILE, FNET_BASE_URL
 from src.get_communications import get_data
 from src.tickers import get_my_tickers, get_wanted_tickers
+from src.utils import get_last_update_date
 
 st.set_page_config(page_title="Comunicados", layout="wide")
 
@@ -33,7 +34,7 @@ if "read" not in st.session_state:
 
 # SIDEBAR FILTERS
 
-atualizado = df["Data Atualização"].min().strftime("%d/%m/%Y %Hh%Mmin")
+atualizado = get_last_update_date()
 st.sidebar.text(f"Atualizado {atualizado}")
 
 st.sidebar.header("Filtros")

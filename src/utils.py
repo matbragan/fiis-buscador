@@ -4,6 +4,8 @@ import os
 import pandas as pd
 
 from config.settings import DOWNLOADS_DIR, PROJECT_ROOT
+from src.get_communications import get_data as get_communications_data
+from src.get_fiis import get_data as get_fiis_data
 
 log_format = "%(asctime)s - %(levelname)s - %(message)s"
 logging.basicConfig(format=log_format, level=logging.INFO)
@@ -45,3 +47,23 @@ def write_csv_file(data: pd.DataFrame, file_path: str, mode: str = "w") -> None:
         # Modo overwrite: escreve o arquivo normalmente
         data.to_csv(file_path, index=False)
         logging.info(f"✓ Arquivo {relative_path} escrito com sucesso!")
+
+
+def get_last_update_date(
+    fiis_data: pd.DataFrame = get_fiis_data(),
+    communications_data: pd.DataFrame = get_communications_data(),
+) -> str:
+    """
+    Obtém a data da última atualização dos dados dos FIIs e comunicados.
+    """
+    fiis_date = (
+        fiis_data["Data Atualização"].min().strftime("%d/%m/%Y %Hh%Mmin")
+        if not fiis_data.empty
+        else "-"
+    )
+    communications_date = (
+        communications_data["Data Atualização"].min().strftime("%d/%m/%Y %Hh%Mmin")
+        if not communications_data.empty
+        else "-"
+    )
+    return min(fiis_date, communications_date)

@@ -8,6 +8,7 @@ import streamlit as st
 from config.settings import MY_FIIS_FILE
 from src.get_fiis import get_data
 from src.tickers import get_my_tickers
+from src.utils import get_last_update_date
 
 st.set_page_config(page_title="Distribuição", layout="wide")
 
@@ -232,5 +233,5 @@ st.plotly_chart(fig_barras, width="stretch")
 
 # INFORMAÇÕES ADICIONAIS
 
-atualizado = df["Data Atualização"].min().strftime("%d/%m/%Y %Hh%Mmin")
+atualizado = get_last_update_date()
 st.sidebar.text(f"Atualizado {atualizado}")
