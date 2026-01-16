@@ -9,9 +9,9 @@ from config.settings import (
     MONEY_COLS,
     PERCENT_COLS,
 )
-from src.get_fiis import get_data
-from src.tickers import get_my_tickers, get_wanted_tickers
-from src.utils import get_last_update_date
+from src.data import get_fiis_data as get_data
+from src.utils.get_date import get_last_update_date
+from src.utils.get_tickers import get_my_tickers, get_wanted_tickers
 
 st.set_page_config(page_title="Buscador", layout="wide")
 

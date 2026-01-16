@@ -6,7 +6,7 @@ from queue import Empty, Queue
 
 import streamlit as st
 
-from src.utils import get_last_update_date
+from src.utils.get_date import get_last_update_date
 
 st.set_page_config(page_title="Atualizar", layout="wide")
 

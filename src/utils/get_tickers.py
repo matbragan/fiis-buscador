@@ -6,25 +6,9 @@ import pandas as pd
 from config.settings import INVESTIDOR10_FILE, MY_FIIS_FILE, WANTED_FIIS_FILE
 
 
-def _get_file_path(filename):
-    """Retorna o caminho completo do arquivo, tentando diferentes locais"""
-    project_root = os.path.dirname(os.path.dirname(__file__))
-    possible_paths = [
-        os.path.join(project_root, "config", filename),  # Primeiro tenta em config/
-        filename,  # Depois tenta caminho relativo atual
-        os.path.join(project_root, filename),  # Depois tenta na raiz do projeto
-        os.path.join(os.getcwd(), filename),  # Por último tenta no diretório de trabalho
-    ]
-    for path in possible_paths:
-        if os.path.exists(path):
-            return path
-    # Retorna o caminho em config/ se não existir (será criado)
-    return os.path.join(project_root, "config", filename)
-
-
 def get_my_tickers():
     """Retorna um set com os tickers dos FIIs que o usuário possui (carregados do arquivo JSON)"""
-    file_path = _get_file_path(MY_FIIS_FILE)
+    file_path = MY_FIIS_FILE
     if os.path.exists(file_path):
         with open(file_path, "r") as f:
             quantities = json.load(f)
@@ -34,32 +18,12 @@ def get_my_tickers():
 
 def get_wanted_tickers():
     """Retorna um set com os tickers dos FIIs desejados (carregados do arquivo JSON)"""
-    file_path = _get_file_path(WANTED_FIIS_FILE)
+    file_path = WANTED_FIIS_FILE
     if os.path.exists(file_path):
         with open(file_path, "r") as f:
             wanted_fiis = json.load(f)
             return set(wanted_fiis.keys())
     return set()
-
-
-def get_my_tickers_dict():
-    """Retorna um dicionário com os tickers dos FIIs que o usuário possui (para compatibilidade)"""
-    file_path = _get_file_path(MY_FIIS_FILE)
-    if os.path.exists(file_path):
-        with open(file_path, "r") as f:
-            quantities = json.load(f)
-            return {ticker: "" for ticker in quantities.keys()}
-    return {}
-
-
-def get_wanted_tickers_dict():
-    """Retorna um dicionário com os tickers dos FIIs desejados (para compatibilidade)"""
-    file_path = _get_file_path(WANTED_FIIS_FILE)
-    if os.path.exists(file_path):
-        with open(file_path, "r") as f:
-            wanted_fiis = json.load(f)
-            return wanted_fiis
-    return {}
 
 
 def get_tickers_with_cnpj():

@@ -6,9 +6,9 @@ import plotly.express as px
 import streamlit as st
 
 from config.settings import MY_FIIS_FILE
-from src.get_fiis import get_data
-from src.tickers import get_my_tickers
-from src.utils import get_last_update_date
+from src.data import get_fiis_data as get_data
+from src.utils.get_date import get_last_update_date
+from src.utils.get_tickers import get_my_tickers
 
 st.set_page_config(page_title="Distribuição", layout="wide")
 

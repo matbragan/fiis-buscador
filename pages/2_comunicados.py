@@ -4,9 +4,9 @@ import pandas as pd
 import streamlit as st
 
 from config.settings import COMMUNICATIONS_READ_FILE, FNET_BASE_URL
-from src.get_communications import get_data
-from src.tickers import get_my_tickers, get_wanted_tickers
-from src.utils import get_last_update_date
+from src.data import get_communications_data as get_data
+from src.utils.get_date import get_last_update_date
+from src.utils.get_tickers import get_my_tickers, get_wanted_tickers
 
 st.set_page_config(page_title="Comunicados", layout="wide")
 
