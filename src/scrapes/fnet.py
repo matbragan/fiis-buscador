@@ -18,8 +18,8 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 from config.settings import COMMUNICATIONS_FILE, FNET_BASE_URL
-from src.tickers import get_tickers_with_cnpj
-from src.utils import write_csv_file
+from src.utils.get_tickers import get_tickers_with_cnpj
+from src.utils.write_files import write_csv_file
 
 log_format = "%(asctime)s - %(levelname)s - %(message)s"
 logging.basicConfig(format=log_format, level=logging.INFO)

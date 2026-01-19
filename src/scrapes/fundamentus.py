@@ -9,7 +9,7 @@ import pandas as pd
 import requests
 
 from config.settings import FUNDAMENTUS_FILE, FUNDAMENTUS_URL, HEADERS
-from src.utils import write_csv_file
+from src.utils.write_files import write_csv_file
 
 log_format = "%(asctime)s - %(levelname)s - %(message)s"
 logging.basicConfig(format=log_format, level=logging.INFO)

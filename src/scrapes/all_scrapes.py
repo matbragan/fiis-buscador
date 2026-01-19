@@ -5,8 +5,8 @@ from src.scrapes.fnet import main as fnet_main
 from src.scrapes.fundamentus import get_fundamentus_data
 from src.scrapes.investidor10 import Investidor10Scraper
 from src.scrapes.ward import main as ward_main
-from src.tickers import get_tickers_with_cnpj
-from src.utils import write_csv_file
+from src.utils.get_tickers import get_tickers_with_cnpj
+from src.utils.write_files import write_csv_file
 
 log_format = "%(asctime)s - %(levelname)s - %(message)s"
 logging.basicConfig(format=log_format, level=logging.INFO)

@@ -11,7 +11,7 @@ import requests
 from bs4 import BeautifulSoup
 
 from config.settings import HEADERS, INVESTIDOR10_BASE_URL, INVESTIDOR10_FILE
-from src.utils import write_csv_file
+from src.utils.write_files import write_csv_file
 
 log_format = "%(asctime)s - %(levelname)s - %(message)s"
 logging.basicConfig(format=log_format, level=logging.INFO)
