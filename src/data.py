@@ -11,6 +11,7 @@ from config.settings import (
     FLOAT_COLS,
     FUNDAMENTUS_FILE,
     INT_COLS,
+    INVESTIDOR10_DIVIDENDS_FILE,
     INVESTIDOR10_FILE,
     MONEY_COLS,
     PERCENT_COLS,
@@ -190,3 +191,54 @@ def get_communications_data() -> pd.DataFrame:
     df["Data de Entrega"] = df["Data de Entrega"].dt.strftime("%Y/%m/%d %Hh%Mmin")
 
     return df
+
+
+def get_dividends_monthly_data() -> pd.DataFrame:
+    """
+    Obtém o histórico de dividendos mensais de todos os FIIs do usuário.
+    Lê os dados do arquivo CSV gerado pelo scrape e agrega os dividendos por ticker e mês.
+
+    Returns:
+        pd.DataFrame: Um DataFrame contendo os dividendos mensais agregados com as colunas:
+            - Ticker: Ticker do FII
+            - Ano_Mes: Ano e mês no formato YYYY-MM
+            - Mes_Ano: Mês e ano no formato MM/YYYY para exibição
+            - Valor: Soma dos dividendos do mês
+    """
+    try:
+        df_dividends = pd.read_csv(INVESTIDOR10_DIVIDENDS_FILE)
+    except FileNotFoundError:
+        return pd.DataFrame(columns=["Ticker", "Ano_Mes", "Mes_Ano", "Valor"])
+
+    if df_dividends.empty:
+        return pd.DataFrame(columns=["Ticker", "Ano_Mes", "Mes_Ano", "Valor"])
+
+    # Converte data_com para datetime se ainda não for
+    if df_dividends["data_com"].dtype == "object":
+        df_dividends["data_com"] = pd.to_datetime(df_dividends["data_com"])
+
+    # Remove linhas onde data_com é None
+    df_dividends = df_dividends[df_dividends["data_com"].notna()].copy()
+
+    if df_dividends.empty:
+        return pd.DataFrame(columns=["Ticker", "Ano_Mes", "Mes_Ano", "Valor"])
+
+    # Extrai ano e mês da coluna data_com
+    df_dividends["Ano_Mes"] = df_dividends["data_com"].dt.to_period("M")
+    df_dividends["Ano_Mes"] = df_dividends["Ano_Mes"].astype(str)
+
+    # Cria coluna para exibição no formato MM/YYYY
+    df_dividends["Mes_Ano"] = df_dividends["data_com"].dt.strftime("%m/%Y")
+
+    # Agrega por Ticker e Ano_Mes, somando os valores
+    df_aggregated = (
+        df_dividends.groupby(["Ticker", "Ano_Mes", "Mes_Ano"])["valor"]
+        .sum()
+        .reset_index()
+        .rename(columns={"valor": "Valor"})
+    )
+
+    # Ordena por Ticker e Ano_Mes
+    df_aggregated = df_aggregated.sort_values(["Ticker", "Ano_Mes"])
+
+    return df_aggregated

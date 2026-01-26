@@ -195,6 +195,159 @@ class Investidor10Scraper:
             ult_rendimento,
         ]
 
+    def _parse_date_string(self, date_str: str, ticker: str, field_name: str) -> datetime | None:
+        """
+        Converte uma string de data no formato DD/MM/YYYY para datetime.
+
+        Args:
+            date_str: String da data no formato DD/MM/YYYY
+            ticker: Ticker do FII para logging
+            field_name: Nome do campo para logging
+
+        Returns:
+            datetime ou None se a conversão falhar
+        """
+        try:
+            return datetime.strptime(date_str, "%d/%m/%Y")
+        except ValueError:
+            logging.warning(f"Erro ao converter {field_name} '{date_str}' para o FII {ticker}")
+            return None
+
+    def _parse_dividend_row(self, row, ticker: str) -> dict | None:
+        """
+        Extrai dados de uma linha da tabela de dividendos.
+
+        Args:
+            row: Elemento BeautifulSoup representando uma linha da tabela
+            ticker: Ticker do FII para logging
+
+        Returns:
+            Dicionário com os dados do dividendo ou None se a linha for inválida
+        """
+        cells = row.find_all("td")
+        if len(cells) < 4:
+            return None
+
+        # Extrai os dados de cada célula
+        tipo = cells[0].get_text(strip=True)
+        data_com_str = cells[1].get_text(strip=True)
+        pagamento_str = cells[2].get_text(strip=True)
+        valor_str = cells[3].get_text(strip=True)
+
+        # Converte datas
+        data_com = self._parse_date_string(data_com_str, ticker, "data_com")
+        pagamento = self._parse_date_string(pagamento_str, ticker, "pagamento")
+
+        # Converte valor de formato brasileiro (0,11000000) para float
+        valor = self.convert_metric_to_float(metric=valor_str)
+
+        return {
+            "tipo": tipo,
+            "data_com": data_com,
+            "pagamento": pagamento,
+            "valor": valor,
+        }
+
+    def get_dividend_history(self, ticker: str) -> pd.DataFrame:
+        """
+        Obtém o histórico de dividendos de um FII específico.
+
+        Args:
+            ticker (str): Ticker do FII que se deseja obter o histórico de dividendos.
+
+        Returns:
+            pd.DataFrame: Um DataFrame contendo o histórico de dividendos com as colunas:
+                - tipo: Tipo de distribuição (ex: Dividendos)
+                - data_com: Data com (ex-date)
+                - pagamento: Data de pagamento
+                - valor: Valor do dividendo
+        """
+        route = ticker.lower()
+        soup = self.get_soup_request(route=route)
+
+        if not soup:
+            logging.error(f"Erro ao obter dados do FII {ticker}")
+            return pd.DataFrame()
+
+        # Encontra a tabela de histórico de dividendos
+        table = soup.find("table", id="table-dividends-history")
+        if not table:
+            logging.warning(f"Tabela de dividendos não encontrada para o FII {ticker}")
+            return pd.DataFrame()
+
+        # Encontra todas as linhas do tbody
+        tbody = table.find("tbody")
+        if not tbody:
+            logging.warning(f"Tbody não encontrado na tabela de dividendos do FII {ticker}")
+            return pd.DataFrame()
+
+        rows = tbody.find_all("tr")
+        data = []
+
+        for row in rows:
+            dividend_data = self._parse_dividend_row(row, ticker)
+            if dividend_data:
+                data.append(dividend_data)
+
+        df = pd.DataFrame(data)
+
+        if not df.empty:
+            logging.info(
+                f"Histórico de dividendos do FII {ticker} obtido com sucesso! ({len(df)} registros)"
+            )
+        else:
+            logging.warning(f"Nenhum registro de dividendo encontrado para o FII {ticker}")
+
+        return df
+
+    def get_all_dividends(self, tickers: list) -> pd.DataFrame:
+        """
+        Obtém o histórico de dividendos de uma lista de FIIs.
+
+        Args:
+            tickers (list): Lista de tickers dos FIIs que se deseja obter o histórico de dividendos.
+
+        Returns:
+            pd.DataFrame: Um DataFrame contendo o histórico de dividendos de todos os FIIs com as colunas:
+                - Ticker: Ticker do FII
+                - tipo: Tipo de distribuição (ex: Dividendos)
+                - data_com: Data com (ex-date)
+                - pagamento: Data de pagamento
+                - valor: Valor do dividendo
+                - Data Atualização: Data da atualização dos dados
+        """
+        all_dividends = []
+
+        logging.info(f"Iniciando coleta de dividendos para {len(tickers)} FIIs...")
+
+        for ticker in tickers:
+            try:
+                df_dividends = self.get_dividend_history(ticker=ticker)
+
+                if not df_dividends.empty:
+                    df_dividends["Ticker"] = ticker
+                    all_dividends.append(df_dividends)
+
+            except Exception as e:
+                logging.error(f"Erro ao obter dividendos do FII {ticker}: {str(e)}")
+                continue
+
+        if not all_dividends:
+            logging.warning("Nenhum dado de dividendo foi obtido")
+            return pd.DataFrame(
+                columns=["Ticker", "tipo", "data_com", "pagamento", "valor", "Data Atualização"]
+            )
+
+        # Concatena todos os DataFrames
+        df_all = pd.concat(all_dividends, ignore_index=True)
+        df_all["Data Atualização"] = datetime.now()
+
+        logging.info(
+            f"✓ Coleta de dividendos concluída! ({len(df_all)} registros de {len(tickers)} FIIs)"
+        )
+
+        return df_all
+
     def get_fiis_from_page(self, page: int) -> pd.DataFrame:
         """
         Obtém os dados dos FIIs de uma determinada página no site Investidor10.
