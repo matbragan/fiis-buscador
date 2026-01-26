@@ -55,3 +55,19 @@ exclude = '''
 profile = "black"
 line_length = 100
 skip_glob = ["*.ipynb", "downloads/*", "__pycache__/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-v",
+    "--strict-markers",
+    "--tb=short",
+]
+markers = [
+    "unit: Testes unitários",
+    "integration: Testes de integração",
+    "slow: Testes que demoram para executar",
+]
