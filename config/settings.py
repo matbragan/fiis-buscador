@@ -16,6 +16,7 @@ DOWNLOADS_DIR = os.path.join(PROJECT_ROOT, "downloads")
 
 # Files
 INVESTIDOR10_FILE = os.path.join(DOWNLOADS_DIR, "investidor10_fiis.csv")
+INVESTIDOR10_DIVIDENDS_FILE = os.path.join(DOWNLOADS_DIR, "investidor10_dividends.csv")
 FUNDAMENTUS_FILE = os.path.join(DOWNLOADS_DIR, "fundamentus_fiis.csv")
 COMMUNICATIONS_FILE = os.path.join(DOWNLOADS_DIR, "communications.csv")
 WARD_FILE = os.path.join(DOWNLOADS_DIR, "ward_fiis.csv")

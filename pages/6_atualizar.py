@@ -28,9 +28,6 @@ if not os.path.exists(SCRIPT_PATH):
 
 st.title("Atualizar Dados")
 
-atualizado = get_last_update_date()
-st.sidebar.text(f"Atualizado {atualizado}")
-
 # Inicializa o estado da sessão
 if "process_running" not in st.session_state:
     st.session_state.process_running = False
@@ -47,6 +44,9 @@ if "return_code" not in st.session_state:
 if "log_queue" not in st.session_state:
     st.session_state.log_queue = Queue()
 
+if "just_finished" not in st.session_state:
+    st.session_state.just_finished = False
+
 
 def enqueue_output(process, queue):
     """Lê a saída do processo e coloca na fila"""
@@ -56,17 +56,36 @@ def enqueue_output(process, queue):
     process.stdout.close()
 
 
-def run_scrapes():
-    """Executa o script de scrapes"""
+def run_scrapes(selected_scrapes):
+    """Executa o script de scrapes com os argumentos selecionados"""
     st.session_state.process_running = True
     st.session_state.logs = []
     st.session_state.return_code = None
     st.session_state.log_queue = Queue()
 
     try:
+        # Constrói o comando com os argumentos selecionados
+        cmd = [VENV_PYTHON, SCRIPT_PATH]
+
+        # Se nenhum scrape foi selecionado ou todos foram selecionados, usa --all
+        if not selected_scrapes or len(selected_scrapes) == 5:
+            cmd.append("--all")
+        else:
+            # Adiciona os argumentos correspondentes aos scrapes selecionados
+            if "investidor10_fiis" in selected_scrapes:
+                cmd.append("--investidor10-fiis")
+            if "investidor10_dividends" in selected_scrapes:
+                cmd.append("--investidor10-dividends")
+            if "fundamentus" in selected_scrapes:
+                cmd.append("--fundamentus")
+            if "fnet" in selected_scrapes:
+                cmd.append("--fnet")
+            if "ward" in selected_scrapes:
+                cmd.append("--ward")
+
         # Executa o script usando o Python do ambiente virtual
         process = subprocess.Popen(
-            [VENV_PYTHON, SCRIPT_PATH],
+            cmd,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             universal_newlines=True,
@@ -88,39 +107,85 @@ def run_scrapes():
         st.session_state.return_code = -1
 
 
-# Verifica se há novos logs na fila e adiciona ao estado
-if st.session_state.process_running and st.session_state.process:
+def _process_log_queue():
+    """Processa logs da fila e adiciona ao estado."""
+    while True:
+        try:
+            log_line = st.session_state.log_queue.get_nowait()
+            if log_line:
+                st.session_state.logs.append(log_line)
+                # Limita o número de linhas de log para evitar uso excessivo de memória
+                if len(st.session_state.logs) > 1000:
+                    st.session_state.logs = st.session_state.logs[-1000:]
+        except Empty:
+            break
+
+
+def _read_remaining_logs():
+    """Lê qualquer saída restante após o processo terminar."""
     try:
         while True:
-            try:
-                log_line = st.session_state.log_queue.get_nowait()
-                if log_line:
-                    st.session_state.logs.append(log_line)
-                    # Limita o número de linhas de log para evitar uso excessivo de memória
-                    if len(st.session_state.logs) > 1000:
-                        st.session_state.logs = st.session_state.logs[-1000:]
-            except Empty:
-                break
+            log_line = st.session_state.log_queue.get_nowait()
+            if log_line:
+                st.session_state.logs.append(log_line)
+    except Empty:
+        pass
+
+
+def _handle_process_completion(return_code):
+    """Lida com a conclusão do processo."""
+    st.session_state.return_code = return_code
+    st.session_state.process_running = False
+    st.session_state.process = None
+
+    # Se a atualização foi bem-sucedida, aguarda um momento e limpa o cache do Streamlit
+    # Isso garante que os arquivos CSV foram completamente escritos no disco
+    if return_code == 0:
+        # Aguarda um pouco mais para garantir que os arquivos foram completamente escritos
+        time.sleep(2)
+        # Limpa todo o cache do Streamlit para forçar recarregamento dos dados
+        st.cache_data.clear()
+        st.session_state.just_finished = True
+        # Força um rerun para atualizar a data exibida
+        st.rerun()
+    else:
+        st.session_state.just_finished = False
+
+
+def _check_and_process_logs():
+    """Verifica se há novos logs na fila e processa o estado do processo."""
+    if not (st.session_state.process_running and st.session_state.process):
+        return
+
+    try:
+        _process_log_queue()
 
         # Verifica se o processo terminou
         return_code = st.session_state.process.poll()
         if return_code is not None:
             # Processo terminou, lê qualquer saída restante
-            try:
-                while True:
-                    log_line = st.session_state.log_queue.get_nowait()
-                    if log_line:
-                        st.session_state.logs.append(log_line)
-            except Empty:
-                pass
-
-            st.session_state.return_code = return_code
-            st.session_state.process_running = False
-            st.session_state.process = None
+            _read_remaining_logs()
+            _handle_process_completion(return_code)
 
     except Exception as e:
         st.session_state.logs.append(f"Erro ao ler logs: {str(e)}")
 
+
+# Verifica se há novos logs na fila e adiciona ao estado
+_check_and_process_logs()
+
+
+# Calcula a data de atualização após verificar o estado do processo
+# Se a atualização acabou de completar, força recarregamento sem cache
+# Também força recarregamento se acabamos de limpar o cache
+if st.session_state.just_finished:
+    # Força recarregamento direto sem cache após atualização
+    atualizado = get_last_update_date(use_cache=False)
+    st.session_state.just_finished = False  # Reseta após usar
+else:
+    atualizado = get_last_update_date(use_cache=True)
+
+st.sidebar.text(f"Atualizado {atualizado}")
 
 # Botão para iniciar/parar a execução
 col1, col2 = st.columns([1, 4])
@@ -136,7 +201,8 @@ with col1:
                 st.rerun()
     else:
         if st.button("▶️ Iniciar Atualização", type="primary"):
-            run_scrapes()
+            # Sempre executa todos os scrapes (selected_scrapes vazio usa --all)
+            run_scrapes([])
             st.rerun()
 
 with col2:

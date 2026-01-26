@@ -1,9 +1,10 @@
 name: DeployEC2
 
 on:
-  push:
-    branches: 
-      - main
+  workflow_dispatch:  # Manual trigger only - automatic deployment disabled
+  # push:
+  #   branches: 
+  #     - main
 
 jobs:
   deploy:
